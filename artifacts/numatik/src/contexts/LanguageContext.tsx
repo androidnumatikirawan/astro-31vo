@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import i18n from "@/i18n";
 import { readLocalStorage, writeLocalStorage } from "@/lib/localStorage";
-import { normalizeLanguage } from "@/lib/pickLang";
+import { normalizeLanguage, resolveLanguage } from "@/lib/pickLang";
 
 export type Language = "id" | "en" | "ms-MY" | "ja" | "zh-CN" | "ru";
 
@@ -16,10 +16,12 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const STORAGE_KEY = "numatik_language";
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const urlLanguage = normalizeLanguage(new URLSearchParams(window.location.search).get("lang"));
   const saved = readLocalStorage(STORAGE_KEY);
   const savedLanguage = normalizeLanguage(saved);
-  const initial = urlLanguage ?? savedLanguage ?? "id";
+  const initial = resolveLanguage(
+    new URLSearchParams(window.location.search).get("lang"),
+    saved,
+  );
 
   const [language, setLangState] = useState<Language>(initial);
   const [hasChosenLanguage, setHasChosenLanguage] = useState(savedLanguage !== undefined);

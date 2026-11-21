@@ -24,6 +24,14 @@ export const normalizeLanguage = (
   return value && isLanguage(value) ? value : undefined;
 };
 
+export const resolveLanguage = (
+  urlLanguage: string | null,
+  savedLanguage: string | null,
+): Language => {
+  if (urlLanguage !== null) return normalizeLanguage(urlLanguage) ?? "id";
+  return normalizeLanguage(savedLanguage) ?? "id";
+};
+
 export const pickLang = <T extends LanguageMap>(
   map: T,
   language: Language,
