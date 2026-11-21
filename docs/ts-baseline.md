@@ -50,3 +50,49 @@ The following imported components had 14 baseline diagnostics, and the same diag
 | `src/components/RangkumanSection.tsx` | TS7016: no declaration file for `react-katex`. |
 | `src/components/SudutPusatInteraktif.tsx` | TS7053: `Language` indexes a map containing only `id`, `en`, and `ja`. |
 | `src/components/SudutPusatProofAnim.tsx` | TS7016: no declaration file for `react-katex`; TS7053: `Language` indexes a map containing only `id`, `en`, and `ja`; TS7006: parameters `_` and `i` implicitly have type `any`. |
+
+## Pre-Fase 0 vs HEAD split comparison (2026-11-21)
+
+- Baseline: `894c52e` (the parent of Fase 0 commit `fccf4a3`).
+- Requested HEAD: `e8366e1`.
+- There is no `tsconfig.app.json`; the app config is `artifacts/numatik/tsconfig.json`.
+- Direct `tsc` runs with a 6144 MiB heap were run sequentially in two `/tmp` worktrees. Both full checks were terminated (`143`, SIGTERM). Subsets for `src/lib`, `src/components`, `src/contexts`, and `src/pages/buku-animasi-matematika` completed. The remaining source was split into page, game, data, and other source subsets. The subset containing `App.tsx` and its lazy-import graph was also terminated on both revisions.
+- Counts below are unique diagnostics by `(file, line, column, code, message)` across completed subsets; imported diagnostics repeated in multiple subsets are counted once. They do not include diagnostics unique to the unfinished `App.tsx` entry subset.
+- The candidate HEAD counts include a type-only correction to `pickLang` that replaces an `unknown` result with the union of the provided locale-map value types. That correction removes the newly introduced `unknown` diagnostics but reveals additional incompatibilities at existing call sites. The correction is included in the follow-up commit that records this comparison.
+
+| Folder | Baseline diagnostics | HEAD candidate diagnostics |
+| --- | ---: | ---: |
+| `src/components` | 111 | 88 |
+| `src/games` | 13 | 13 |
+| `src/pages/<root>` | 272 | 244 |
+| `src/pages/bank-soal` | 21 | 2 |
+| `src/pages/buku-animasi-matematika` | 2,246 | 1,652 |
+| `src/pages/lkpd` | 97 | 90 |
+| `src/pages/menghitung-cepat` | 8 | 0 |
+| `src/pages/numatik-gamez` | 74 | 74 |
+| `src/pages/ruang-untuk-guru` | 46 | 10 |
+| `src/pages/tka` | 18 | 7 |
+| `src/pages/tugas-latihan-mandiri` | 135 | 6 |
+| **Total completed subsets** | **3,041** | **2,186** |
+
+There are 18 new `(file, TS code)` pairs in the completed-subset comparison: 14 in files changed since the baseline and 4 in unchanged files. The unchanged-file pairs are TS2322 in `src/pages/OlimpiadeBilanganIrasionalPage.tsx`, `src/pages/buku-animasi-matematika/aritmetika-sosial/BrutoNettoTaraPage.tsx`, `BungaTunggalPage.tsx`, and `DiskonPage.tsx` (`string | undefined` is not assignable to `string`).
+
+New pairs in changed files and the TypeScript messages:
+
+| File and line | Code | Message |
+| --- | --- | --- |
+| `bilangan-bulat/PembagianPage.tsx:1265,1295,1322,1352` | TS2352 | Conversion of readonly locale tuples/arrays to mutable array types may be a mistake because neither type sufficiently overlaps; TypeScript suggests converting to `unknown` first. |
+| `garis-singgung-lingkaran/GSPDPage.tsx:250` | TS2352 | Conversion of the localized object to `Record<..., string>` may be a mistake because the types do not sufficiently overlap. |
+| `garis-singgung-lingkaran/SabukLilitanPage.tsx:339` | TS2352 | Conversion of the localized object to `Record<..., string>` may be a mistake because the types do not sufficiently overlap. |
+| `lingkaran/BusurJuringPage.tsx:1012` | TS2719 | The localized value is not assignable to the expected localized value type; two different types with this name exist, but they are unrelated. |
+| `lingkaran/KaitanBangunDatarLainnyaPage.tsx:1248` | TS2322 | The union of locale objects is not assignable to the expected locale object type. |
+| `lingkaran/KaitanBangunDatarPage.tsx:415` | TS2322 | The union of locale objects is not assignable to the expected locale object type. |
+| `lingkaran/KelilingLuasPage.tsx:717` | TS2719 | The localized value is not assignable to the expected localized value type; two different types with this name exist, but they are unrelated. |
+| `lingkaran/PenerapanKontekstualPage.tsx:501` | TS2719 | The localized value is not assignable to the expected localized value type; two different types with this name exist, but they are unrelated. |
+| `lingkaran/SudutPusatKelilingPage.tsx:406` | TS2719 | The localized value is not assignable to the expected localized value type; two different types with this name exist, but they are unrelated. |
+| `lingkaran/UnsurUnsurPage.tsx:672,762` | TS2719, TS2345 | The localized value is not assignable to the expected localized value type; two different types with this name exist, but they are unrelated. The argument's locale-object type is not assignable to the expected locale-object type. |
+| `plsv-ptlsv/KalimatTerbukaTertutupPage.tsx:448` | TS2551 | Property `terbukaDefBody4` does not exist on the localized value type; did you mean `terbukaDefBody`? |
+| `relasi-fungsi/GrafikFungsiPage.tsx:496,497,532,533` | TS2339 | Properties `graph1_title`, `graph1_sub`, `graph2_title`, and `graph2_sub` do not exist on the union of locale objects. |
+| `relasi-fungsi/GrafikFungsiPage.tsx:622,624,692,694,750,752` | TS2322 | Readonly locale tuples/arrays are not assignable to the mutable array types expected by these props. |
+
+The gate is not clear: new pairs remain in changed page files, and the `App.tsx` entry subset did not complete. Per the task constraints, no `src/pages` files were changed and Fase B/C must not proceed until this is resolved.

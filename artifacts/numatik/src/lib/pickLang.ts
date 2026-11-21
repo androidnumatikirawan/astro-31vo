@@ -1,6 +1,10 @@
 import type { Language } from "@/contexts/LanguageContext";
 
 type LanguageMap = Partial<Record<Language, unknown>>;
+type LanguageMapValue<T extends LanguageMap> = Exclude<
+  T[Extract<keyof T, Language>],
+  undefined
+>;
 
 const LANGUAGE_FALLBACKS: Record<Language, readonly Language[]> = {
   id: ["id"],
@@ -35,11 +39,11 @@ export const resolveLanguage = (
 export const pickLang = <T extends LanguageMap>(
   map: T,
   language: Language,
-): Exclude<T[Language], undefined> => {
+): LanguageMapValue<T> => {
   for (const candidate of LANGUAGE_FALLBACKS[language]) {
     const translation = map[candidate];
     if (translation !== undefined) {
-      return translation as Exclude<T[Language], undefined>;
+      return translation as LanguageMapValue<T>;
     }
   }
 
