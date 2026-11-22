@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import type { Language } from "@/contexts/LanguageContext";
+import { pickLang } from "@/lib/pickLang";
 
 const VA_COLOR = "#f97316";
 const VB_COLOR = "#22d3ee";
@@ -22,8 +23,7 @@ const BASE_AB = 45;
 const BASE_AC = 60;
 const BASE_BC = 75;
 
-const translations = {
-  id: {
+const id = {
     header:        "Simulasi Interaktif — Konsep Kesebangunan",
     svgRef:        "REFERENSI (△ABC)",
     svgSimilar:    "sebangun",
@@ -64,8 +64,11 @@ const translations = {
     resetBtn:      "Reset ke Posisi Awal",
     flipHWord:     " horizontal",
     flipVWord:     " vertikal",
-  },
-  en: {
+    scaleSlider:   "Pengatur faktor skala",
+    canvasLabel:   "Animasi segitiga acuan dan segitiga hasil transformasi",
+};
+type T = typeof id;
+const en: T = {
     header:        "Interactive Simulation — Similarity Concept",
     svgRef:        "REFERENCE (△ABC)",
     svgSimilar:    "similar",
@@ -106,8 +109,53 @@ const translations = {
     resetBtn:      "Reset to Initial Position",
     flipHWord:     " horizontally",
     flipVWord:     " vertically",
-  },
-  ja: {
+    scaleSlider:   "Scale factor slider",
+    canvasLabel:   "Animation of the reference triangle and transformed triangle",
+  };
+const msMY: T = {
+    header:        "Simulasi Interaktif — Konsep Keserupaan",
+    svgRef:        "RUJUKAN (△ABC)",
+    svgSimilar:    "serupa",
+    svgResult:     (k: string) => `HASIL (k = ${k}×)`,
+    scaleLabel:    "🔢 Faktor Skala (k)",
+    scaleMin:      "0.4× (lebih kecil)",
+    scaleMid:      "1× (sama)",
+    scaleMax:      "2.5× (lebih besar)",
+    sideAB:        "Sisi A′B′",
+    sideAC:        "Sisi A′C′",
+    sideBC:        "Sisi B′C′",
+    rotateTitle:   "🔄 Putar",
+    rotated:       (deg: number) => `Diputar: ${deg}°`,
+    flipTitle:     "🪞 Balik / Cermin",
+    flipH:         "↔ Kiri-Kanan",
+    flipV:         "↕ Atas-Bawah",
+    mirrorHV:      "Cermin mendatar + menegak aktif",
+    mirrorH:       "Cermin mendatar aktif",
+    mirrorV:       "Cermin menegak aktif",
+    mirrorNone:    "Tiada pantulan",
+    statusDefault: "Cuba gerakkan peluncur, putar atau balikkan segi tiga!",
+    statusScaled:  (k: string) => `Dibesarkan/dikecilkan ${k}×. Sudut kekal sama → masih SERUPA!`,
+    statusRotated: (deg: number) => `Diputar ${deg}°. Sudut kekal sama → masih SERUPA!`,
+    statusFlipped: (h: string, v: string) => `Dipantulkan${h}${v}. Sudut kekal sama → masih SERUPA!`,
+    statusAll:     "Diskalakan, diputar dan dipantulkan — sudut sentiasa 90°, 53°, 37°. SERUPA!",
+    statusBadge:   "SERUPA (∼) — Terbukti!",
+    ratioEqual:    (k: string) => `✓ Semua nisbah sama dengan k = ${k} → SERUPA`,
+    congrTitle:    "💡 Bilakah bentuk menjadi KONGRUEN (≅)?",
+    congrBody:     (
+      <>
+        Apabila k = 1.0 (skala kekal 1×), panjang sisi juga sama → dua bentuk serupa yang
+        bersaiz sama disebut <strong className="text-purple-300">kongruen</strong>. Putaran dan
+        pantulan dibenarkan selagi saiz tidak berubah!
+      </>
+    ),
+    congrActive:   "k ≈ 1.0 sekarang → Bentuk ini KONGRUEN! (≅)",
+    resetBtn:      "Tetapkan Semula ke Kedudukan Asal",
+    flipHWord:     " mendatar",
+    flipVWord:     " menegak",
+    scaleSlider:   "Peluncur faktor skala",
+    canvasLabel:   "Animasi segi tiga rujukan dan segi tiga selepas transformasi",
+  };
+const ja: T = {
     header:        "インタラクティブシミュレーション — 相似の概念",
     svgRef:        "参照 (△ABC)",
     svgSimilar:    "相似",
@@ -147,8 +195,102 @@ const translations = {
     resetBtn:      "初期位置にリセット",
     flipHWord:     "（水平）",
     flipVWord:     "（垂直）",
-  },
-} as const;
+    scaleSlider:   "スケール係数スライダー",
+    canvasLabel:   "基準の三角形と変換後の三角形のアニメーション",
+  };
+const zhCN: T = {
+    header:        "交互模拟 — 相似概念",
+    svgRef:        "参考图形（△ABC）",
+    svgSimilar:    "相似",
+    svgResult:     (k: string) => `变换结果（k = ${k}×）`,
+    scaleLabel:    "🔢 相似比（k）",
+    scaleMin:      "0.4×（缩小）",
+    scaleMid:      "1×（不变）",
+    scaleMax:      "2.5×（放大）",
+    sideAB:        "边 A′B′",
+    sideAC:        "边 A′C′",
+    sideBC:        "边 B′C′",
+    rotateTitle:   "🔄 旋转",
+    rotated:       (deg: number) => `旋转：${deg}°`,
+    flipTitle:     "🪞 翻转 / 镜像",
+    flipH:         "↔ 左右",
+    flipV:         "↕ 上下",
+    mirrorHV:      "已启用水平和垂直镜像",
+    mirrorH:       "已启用水平镜像",
+    mirrorV:       "已启用垂直镜像",
+    mirrorNone:    "未镜像",
+    statusDefault: "试着拖动滑块、旋转或翻转三角形！",
+    statusScaled:  (k: string) => `缩放 ${k}×。角度不变 → 仍然相似！`,
+    statusRotated: (deg: number) => `旋转 ${deg}°。角度不变 → 仍然相似！`,
+    statusFlipped: (h: string, v: string) => `已镜像${h}${v}。角度不变 → 仍然相似！`,
+    statusAll:     "缩放、旋转、镜像后，角度仍为90°、53°、37°。相似！",
+    statusBadge:   "相似（∼）— 已验证！",
+    ratioEqual:    (k: string) => `✓ 所有边的比都等于 k = ${k} → 相似`,
+    congrTitle:    "💡 什么时候变为全等（≅）？",
+    congrBody:     (
+      <>
+        当 k = 1.0（缩放比例保持1×）时，各边长度也相等 → 两个大小相同的相似图形称为
+        <strong className="text-purple-300">全等</strong>。只要大小不变，旋转和镜像都可以！
+      </>
+    ),
+    congrActive:   "当前 k ≈ 1.0 → 此图形全等！（≅）",
+    resetBtn:      "重置到初始位置",
+    flipHWord:     "水平",
+    flipVWord:     "垂直",
+    scaleSlider:   "相似比调节滑块",
+    canvasLabel:   "参考三角形及变换后三角形的动画",
+  };
+const ru: T = {
+    header:        "Интерактивная модель — подобие",
+    svgRef:        "ОБРАЗЕЦ (△ABC)",
+    svgSimilar:    "подобны",
+    svgResult:     (k: string) => `РЕЗУЛЬТАТ (k = ${k}×)`,
+    scaleLabel:    "🔢 Коэффициент подобия (k)",
+    scaleMin:      "0,4× (меньше)",
+    scaleMid:      "1× (без изменения)",
+    scaleMax:      "2,5× (больше)",
+    sideAB:        "Сторона A′B′",
+    sideAC:        "Сторона A′C′",
+    sideBC:        "Сторона B′C′",
+    rotateTitle:   "🔄 Поворот",
+    rotated:       (deg: number) => `Поворот: ${deg}°`,
+    flipTitle:     "🪞 Отражение",
+    flipH:         "↔ По горизонтали",
+    flipV:         "↕ По вертикали",
+    mirrorHV:      "Включено горизонтальное и вертикальное отражение",
+    mirrorH:       "Включено горизонтальное отражение",
+    mirrorV:       "Включено вертикальное отражение",
+    mirrorNone:    "Без отражения",
+    statusDefault: "Попробуйте передвинуть ползунок, повернуть или отразить треугольник!",
+    statusScaled:  (k: string) => `Масштаб изменён в ${k}×. Углы прежние → треугольники подобны!`,
+    statusRotated: (deg: number) => `Поворот на ${deg}°. Углы прежние → треугольники подобны!`,
+    statusFlipped: (h: string, v: string) => `Отражение${h}${v}. Углы прежние → треугольники подобны!`,
+    statusAll:     "Масштабирование, поворот и отражение не меняют углы: 90°, 53°, 37°. Треугольники подобны!",
+    statusBadge:   "ПОДОБИЕ (∼) — доказано!",
+    ratioEqual:    (k: string) => `✓ Все отношения равны k = ${k} → треугольники подобны`,
+    congrTitle:    "💡 Когда фигуры становятся КОНГРУЭНТНЫМИ (≅)?",
+    congrBody:     (
+      <>
+        При k = 1.0 (масштаб 1×) длины сторон также равны → подобные фигуры одинакового размера
+        называются <strong className="text-purple-300">конгруэнтными</strong>. Поворот и отражение
+        допустимы, если размер не меняется!
+      </>
+    ),
+    congrActive:   "Сейчас k ≈ 1.0 → фигуры КОНГРУЭНТНЫ! (≅)",
+    resetBtn:      "Вернуть исходное положение",
+    flipHWord:     " по горизонтали",
+    flipVWord:     " по вертикали",
+    scaleSlider:   "Ползунок коэффициента подобия",
+    canvasLabel:   "Анимация исходного и преобразованного треугольников",
+  };
+const translations = {
+  id,
+  en,
+  "ms-MY": msMY,
+  ja,
+  "zh-CN": zhCN,
+  ru,
+} satisfies Record<Language, T>;
 
 function RightAngleSquare({ x, y, size = 8, stroke }: { x: number; y: number; size?: number; stroke: string }) {
   return (
@@ -211,7 +353,7 @@ export default function SimilarityAnimation({ lang = "id" }: Props) {
   const [flipH, setFlipH] = useState(false);
   const [flipV, setFlipV] = useState(false);
 
-  const t = translations[lang] ?? translations.id;
+  const t = pickLang(translations, lang);
 
   const handleReset = () => {
     setScale(1.0);
@@ -272,7 +414,7 @@ export default function SimilarityAnimation({ lang = "id" }: Props) {
 
         {/* SVG Canvas */}
         <div className="bg-slate-800/60 rounded-xl overflow-hidden border border-slate-700/50">
-          <svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} className="w-full">
+          <svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} className="w-full" role="img" aria-label={t.canvasLabel}>
             <defs>
               <pattern id="simgrid" width="20" height="20" patternUnits="userSpaceOnUse">
                 <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" strokeWidth="0.8" />
@@ -387,6 +529,7 @@ export default function SimilarityAnimation({ lang = "id" }: Props) {
             step="0.1"
             value={scale}
             onChange={e => setScale(parseFloat(e.target.value))}
+            aria-label={t.scaleSlider}
             className="w-full h-2 rounded-full accent-cyan-400 cursor-pointer"
           />
           <div className="flex justify-between text-xs text-white/30 font-body">
