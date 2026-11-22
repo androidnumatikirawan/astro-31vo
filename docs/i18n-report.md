@@ -6,11 +6,11 @@ Pemeriksaan membaca objek locale statis; spread atau key komputasi yang menghala
 ## Ringkasan
 
 - File sumber yang dipindai: 176.
-- File dengan objek terjemahan per bahasa: 150.
-- File dengan cabang `ja`: 171.
-- File tanpa terjemahan yang terdeteksi: 1.
+- File dengan objek terjemahan per bahasa: 151.
+- File dengan cabang `ja`: 172.
+- File tanpa terjemahan yang terdeteksi: 0.
 - File dengan objek yang tidak terbaca: 0.
-- Ekstraksi angka: 2590 mismatch dengan ekstraktor digit lama; 417 mismatch dengan pembanding sebelum diagnosis; 569 setelah perbaikan parser; 411 setelah klasifikasi. 2092 mismatch digit lama tidak lagi terdeteksi; 71 mismatch baru terungkap.
+- Ekstraksi angka: 2602 mismatch dengan ekstraktor digit lama; 417 mismatch dengan pembanding sebelum diagnosis; 569 setelah perbaikan parser; 411 setelah klasifikasi. 2104 mismatch digit lama tidak lagi terdeteksi; 71 mismatch baru terungkap.
 - Selain selisih yang diklasifikasikan, 315 pasangan angka bernilai sama hanya berbeda format. Kelas adaptasi mata uang memakai pasangan Rp/$ dengan nilai sama atau skala nominal 1.000:1; ini bukan validasi kurs.
 - Label jenjang seperti Kelas 7 / Grade 7 / 中学1年 diabaikan pada perbandingan angka karena penomoran jenjang berbeda menurut bahasa.
 
@@ -33,7 +33,7 @@ Pemeriksaan membaca objek locale statis; spread atau key komputasi yang menghala
 
 | Perbandingan | Mismatch numeric | Hilang | Baru terungkap |
 | --- | ---: | ---: | ---: |
-| Ekstraktor digit lama → parser saat ini | 2590 → 569 | 2092 | 71 |
+| Ekstraktor digit lama → parser saat ini | 2602 → 569 | 2104 | 71 |
 | Pembanding sebelum diagnosis → sesudah diagnosis | 417 → 569 | 86 | 238 |
 
 ### Jumlah ketidaksesuaian per jenis (seluruh file)
@@ -626,7 +626,6 @@ Nilai dipendekkan bila terlalu panjang. Hanya kelas nilai-beda dan ambigu-pemisa
 
 | File | Klasifikasi |
 | --- | --- |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/BukuAnimasiPenjumlahanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/BukuAnimasiPenjumlahanPage.tsx) | halaman konten |
 
 ## Cakupan per topik
 
@@ -638,7 +637,7 @@ Nilai dipendekkan bila terlalu panjang. Hanya kelas nilai-beda dan ambigu-pemisa
 | [`bangun-ruang-sisi-datar`](../artifacts/numatik/src/pages/buku-animasi-matematika/bangun-ruang-sisi-datar) | 5 | 5 | 0 | — |
 | [`bangun-ruang-sisi-lengkung`](../artifacts/numatik/src/pages/buku-animasi-matematika/bangun-ruang-sisi-lengkung) | 5 | 5 | 0 | — |
 | [`bilangan-berpangkat`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-berpangkat) | 4 | 4 | 0 | — |
-| [`bilangan-bulat`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat) | 7 | 6 | 4 | `BukuAnimasiPenjumlahanPage.tsx` |
+| [`bilangan-bulat`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat) | 7 | 7 | 5 | — |
 | [`bilangan-rasional`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional) | 10 | 10 | 10 | — |
 | [`fungsi-kuadrat`](../artifacts/numatik/src/pages/buku-animasi-matematika/fungsi-kuadrat) | 6 | 6 | 0 | — |
 | [`garis-dan-sudut`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut) | 4 | 4 | 0 | — |
@@ -1385,6 +1384,16 @@ Bahasa: id, en, ja
 
 
 ## Topik bilangan-bulat
+
+### [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/BukuAnimasiPenjumlahanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/BukuAnimasiPenjumlahanPage.tsx)
+
+#### Peta 1: `object@393` (baris 393)
+Bahasa: id, en, ms-MY, ja, zh-CN, ru
+- Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
+
+#### Peta 2: `locale constants@1` (baris 68)
+Bahasa: id, en, ja, ru
+- Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
 
 ### [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/KPKFPBPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/KPKFPBPage.tsx)
 
