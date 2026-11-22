@@ -560,7 +560,7 @@ function normalizeNumber(
   token: string,
   language: Language,
 ): string | undefined {
-  let value = token.replace(/[\u00a0\u202f ]/g, "");
+  let value = token;
   let sign = "";
   if (/^[+\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]/u.test(value)) {
     sign = /^[\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]/u.test(value) ? "-" : "";
@@ -568,43 +568,25 @@ function normalizeNumber(
   }
   if (!value) return undefined;
 
-  const comma = value.lastIndexOf(",");
-  const dot = value.lastIndexOf(".");
-  let decimalSeparator: string | undefined;
-
-  if (comma >= 0 && dot >= 0) {
-    decimalSeparator = language === "id" || language === "ru" ? "," : ".";
-  } else if (comma >= 0) {
-    const trailing = value.length - comma - 1;
-    if (
-      language === "en" ||
-      language === "ja" ||
-      language === "ms-MY" ||
-      language === "zh-CN"
-    ) {
-      decimalSeparator = trailing === 3 ? undefined : ",";
-    } else {
-      decimalSeparator = ",";
-    }
-  } else if (dot >= 0) {
-    const trailing = value.length - dot - 1;
-    if (language === "id" || language === "ru") {
-      decimalSeparator = trailing === 3 ? undefined : ".";
-    } else {
-      decimalSeparator = ".";
-    }
-  }
-
-  const decimalIndex = decimalSeparator
-    ? value.lastIndexOf(decimalSeparator)
-    : -1;
+  const decimalSeparator =
+    language === "id" || language === "ru" ? "," : ".";
+  const decimalIndex = value.lastIndexOf(decimalSeparator);
   const integerPart = decimalIndex >= 0 ? value.slice(0, decimalIndex) : value;
   const fractionalPart = decimalIndex >= 0 ? value.slice(decimalIndex + 1) : "";
   const integer =
-    integerPart.replace(/[.,]/g, "").replace(/^0+(?=\d)/, "") || "0";
-  const fraction = fractionalPart.replace(/[.,]/g, "").replace(/0+$/, "");
+    integerPart.replace(/[.,\u00a0\u202f ]/g, "").replace(/^0+(?=\d)/, "") ||
+    "0";
+  const fraction = fractionalPart
+    .replace(/[.,\u00a0\u202f ]/g, "")
+    .replace(/0+$/, "");
   return `${sign}${integer}${fraction ? `.${fraction}` : ""}`;
 }
+
+const circledDigits: Record<string, string> = {
+  "①": "1",
+  "②": "2",
+  "③": "3",
+};
 
 function prepareNumberText(text: string, language: Language): string {
   const gradePatterns: Partial<Record<Language, RegExp>> = {
@@ -616,6 +598,7 @@ function prepareNumberText(text: string, language: Language): string {
     ru: /\b[789]\s*класс\b/gi,
   };
   return text
+    .replace(/[①②③]/gu, (digit) => `${circledDigits[digit]};`)
     .replace(/\bRp(?=\s*[+-]?\d)/gi, " ")
     .replace(/\\,/g, " ")
     .replace(/\{,\}/g, ",")
@@ -624,6 +607,10 @@ function prepareNumberText(text: string, language: Language): string {
       "$1",
     )
     .replace(/\\[A-Za-z]+/g, " ")
+    .replace(
+      /\\?\{(\s*\d+(?:\s*,\s*\d+)+\s*)\\?\}/g,
+      (_match, values: string) => values.replace(/,/g, ";"),
+    )
     .replace(/[{}]/g, " ")
     .replace(gradePatterns[language] ?? /$^/, " ");
 }
@@ -633,10 +620,18 @@ function numberTokenMatches(
   language: Language,
 ): Array<{ index: number; value: string }> {
   const prepared = prepareNumberText(text, language);
+  const numericPattern =
+    language === "id"
+      ? String.raw`(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d+)?`
+      : language === "ru"
+        ? String.raw`(?:\d{1,3}(?:[ \u00a0\u202f]\d{3})+|\d+)(?:,\d+)?`
+        : String.raw`(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?`;
+  const pattern = new RegExp(
+    String.raw`(?<![A-Za-z0-9_])([+\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]?${numericPattern})(?:st|nd|rd|th)?(?![A-Za-z0-9_])`,
+    "giu",
+  );
   const matches = [
-    ...prepared.matchAll(
-      /(?<![A-Za-z0-9_])([+\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]?\d+(?:[.,\u00a0\u202f ]\d+)*)(?:st|nd|rd|th)?(?![A-Za-z0-9_])/giu,
-    ),
+    ...prepared.matchAll(pattern),
   ];
   return matches.map((match) => ({
     index: match.index ?? 0,
@@ -760,7 +755,7 @@ function numberCodePoints(text: string): string[] {
   const symbols = [
     ...new Set(
       text.match(
-        /[0-9０-９〇零一二三四五六七八九十百千万億.,，。٫٬+\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]/gu,
+        /[0-9０-９①②③〇零一二三四五六七八九十百千万億.,，。٫٬+\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]/gu,
       ) ?? [],
     ),
   ];
@@ -773,30 +768,20 @@ function numberCodePoints(text: string): string[] {
 function numbersForComparison(
   text: string,
   language: Language,
-  counterpartText: string,
-  counterpartLanguage: Language,
 ): string[] {
-  const comparisonText =
-    language === "ja" &&
-    /\d+\s*乗/.test(text) &&
-    /(?:dikuadratkan|kuadrat|squared)/i.test(counterpartText) &&
-    numberWordMatches(counterpartText, counterpartLanguage).length === 0
-      ? text.replace(/\d+\s*乗/g, " ")
-      : text;
-  const literals = numberTokenMatches(comparisonText, language);
-  const counterpartLiteralCount = numberTokenMatches(
-    counterpartText,
-    counterpartLanguage,
-  ).length;
-  const words = numberWordMatches(comparisonText, language).slice(
-    0,
-    Math.max(0, counterpartLiteralCount - literals.length),
+  return [...new Set(numbersIn(text, language))].sort();
+}
+
+function hasComparableDigits(
+  firstText: string,
+  firstLanguage: Language,
+  secondText: string,
+  secondLanguage: Language,
+): boolean {
+  return (
+    numberTokenMatches(firstText, firstLanguage).length > 0 &&
+    numberTokenMatches(secondText, secondLanguage).length > 0
   );
-  if (!words.length) return numbersIn(comparisonText, language);
-  return [...literals, ...words]
-    .sort((a, b) => a.index - b.index)
-    .map(({ value }) => normalizeNumber(value, language))
-    .filter((value): value is string => value !== undefined);
 }
 
 const previousNumberWordPatterns: Partial<
@@ -1080,6 +1065,17 @@ function classifyNumberMismatch(
 const numberNormalizationExamples: Array<[string, Language, string[]]> = [
   ["1.234,5", "id", ["1234.5"]],
   ["1,234.5", "en", ["1234.5"]],
+  ["1,234.5", "ms-MY", ["1234.5"]],
+  ["1,234.5", "ja", ["1234.5"]],
+  ["1,234.5", "zh-CN", ["1234.5"]],
+  ["1 234,5", "ru", ["1234.5"]],
+  ["1.234", "id", ["1234"]],
+  ["1,234", "en", ["1234"]],
+  ["2, 3, 5, 7, 11, 13", "en", ["2", "3", "5", "7", "11", "13"]],
+  ["4,638", "id", ["4.638"]],
+  ["4,638", "en", ["4638"]],
+  ["S = \\{1,2,3,4\\}", "id", ["1", "2", "3", "4"]],
+  ["①②③", "en", ["1", "2", "3"]],
   ["Rp1.234.500", "id", ["1234500"]],
   ["$1,234,500", "en", ["1234500"]],
   ["1\\,234{,}5", "ru", ["1234.5"]],
@@ -1134,20 +1130,16 @@ function assertNumberNormalizationExamples(): void {
       );
     }
   }
-  const wordAndDigit = numbersForComparison("dua bilangan", "id", "2つ", "ja");
-  if (wordAndDigit.join(",") !== "2") {
-    throw new Error(`Number-word comparison failed: ${wordAndDigit.join(",")}`);
+  if (hasComparableDigits("dua bilangan", "id", "2つ", "ja")) {
+    throw new Error("Pairs without digits on both sides must be ignored");
   }
   for (const sign of ["-", "−", "–", "—"]) {
     if (numbersIn(`${sign}12`, "en").join(",") !== "-12") {
       throw new Error(`Minus normalization failed for ${JSON.stringify(sign)}`);
     }
   }
-  const kanjiCounter = numbersForComparison("3", "id", "三つ", "ja");
-  if (kanjiCounter.join(",") !== "3") {
-    throw new Error(
-      `Japanese counter comparison failed: ${kanjiCounter.join(",")}`,
-    );
+  if (hasComparableDigits("3", "id", "三つ", "ja")) {
+    throw new Error("Japanese word counters without digits must be ignored");
   }
   if (numberWordMatches("三角形", "ja").length !== 0) {
     throw new Error(
@@ -1157,10 +1149,14 @@ function assertNumberNormalizationExamples(): void {
   if (numberWordMatches("二十人", "ja")[0]?.value !== "20") {
     throw new Error("Japanese compound counter parsing failed");
   }
+  if (numbersForComparison("①②③", "en").join(",") !== "1,2,3") {
+    throw new Error("Circled digit normalization failed");
+  }
   if (
-    numbersForComparison("Step 2", "en", "Langkah dua", "id").join(",") !== "2"
+    numbersForComparison("1 + 2 + 1", "en").join(",") !==
+    numbersForComparison("2 + 1", "en").join(",")
   ) {
-    throw new Error("English step-number comparison failed");
+    throw new Error("Numeric comparisons must compare sets, not sequences");
   }
 }
 
@@ -1320,6 +1316,9 @@ function analyzeMap(
       for (const key of sharedValues.sort()) {
         const idText = id.values.get(key) ?? "";
         const otherText = other.values.get(key) ?? "";
+        const idTokens = numberTokensIn(idText, "id");
+        const otherTokens = numberTokensIn(otherText, language);
+        const hasDigitPair = idTokens.length > 0 && otherTokens.length > 0;
         const previousIdNumbers = previousNumbersForComparison(
           idText,
           "id",
@@ -1333,30 +1332,18 @@ function analyzeMap(
           "id",
         );
         const previousMismatch =
-          (previousIdNumbers.length || previousOtherNumbers.length) &&
+          hasDigitPair &&
           previousIdNumbers.join(",") !== previousOtherNumbers.join(",");
         if (previousMismatch) numberMismatchesBeforeDiagnosis++;
         const legacyIdNumbers = legacyNumbersIn(idText, "id");
         const legacyOtherNumbers = legacyNumbersIn(otherText, language);
-        const idTokens = numberTokensIn(idText, "id");
-        const otherTokens = numberTokensIn(otherText, language);
-        const idNumbers = numbersForComparison(
-          idText,
-          "id",
-          otherText,
-          language,
-        );
-        const otherNumbers = numbersForComparison(
-          otherText,
-          language,
-          idText,
-          "id",
-        );
+        const idNumbers = numbersForComparison(idText, "id");
+        const otherNumbers = numbersForComparison(otherText, language);
         const legacyMismatch =
           (legacyIdNumbers.length || legacyOtherNumbers.length) &&
           legacyIdNumbers.join(",") !== legacyOtherNumbers.join(",");
         const mismatch =
-          (idNumbers.length || otherNumbers.length) &&
+          hasDigitPair &&
           idNumbers.join(",") !== otherNumbers.join(",");
         if (previousMismatch && !mismatch) {
           numberMismatchesRemovedByDiagnosis++;
@@ -1835,6 +1822,27 @@ function sampledNumericCases(): Array<{
 
 const sampledCases = sampledNumericCases();
 
+function maximumNumericMagnitude(numericCase: NumericCase): number {
+  const values = [...numericCase.idNumbers, ...numericCase.otherNumbers]
+    .map(Number)
+    .filter(Number.isFinite)
+    .map(Math.abs);
+  return Math.max(0, ...values);
+}
+
+const largestNumericCases = allFiles
+  .flatMap((file) =>
+    file.numericCases.map((numericCase) => ({ file, numericCase })),
+  )
+  .sort(
+    (first, second) =>
+      maximumNumericMagnitude(second.numericCase) -
+        maximumNumericMagnitude(first.numericCase) ||
+      first.file.path.localeCompare(second.file.path) ||
+      first.numericCase.key.localeCompare(second.numericCase.key),
+  )
+  .slice(0, 10);
+
 function selectMismatchExamples(file: FileAnalysis): MismatchExample[] {
   const selected: MismatchExample[] = [];
   for (const category of ["a", "b", "c", "d"]) {
@@ -1930,7 +1938,19 @@ const output: string[] = [
   `| Angka-kata Inggris / nomor langkah | ${totalFalsePositiveHypotheses.englishWordsOrSteps} |`,
   `| Pemisah ribuan/desimal | ${totalFalsePositiveHypotheses.separators} |`,
   "",
-  "Uji separator sengaja tidak mengubah tafsir berdasarkan dugaan: kandidat ambigu tetap dihitung sebagai ambigu-pemisah, bukan dihapus sebagai false positive.",
+  "Pemisah angka ditafsirkan menurut locale yang dinyatakan; format yang tidak sesuai tetap dilaporkan sebagai mismatch, tanpa menebak makna yang dimaksud.",
+  "",
+  "### 10 kasus sisa dengan angka terbesar",
+  "",
+  "Diurutkan menurut nilai absolut maksimum pada himpunan angka hasil parse id dan locale pembanding.",
+  "",
+  "| File | Baris | Key | Bahasa | Nilai id | Nilai en/ja | Maksimum absolut |",
+  "| --- | ---: | --- | --- | --- | --- | ---: |",
+  ...largestNumericCases.map(
+    ({ file, numericCase }) =>
+      `| [\`${markdownPath(file.path)}\`](${markdownPath(file.path)}) | ${numericCase.line} | \`${markdownCell(numericCase.key)}\` | ${numericCase.language} | [${numericCase.idNumbers.join(", ")}] | [${numericCase.otherNumbers.join(", ")}] | ${maximumNumericMagnitude(numericCase)} |`,
+  ),
+  "",
   "",
   "### Sampel acak merata: 30 kasus nilai-beda dari file berbeda",
   "",
