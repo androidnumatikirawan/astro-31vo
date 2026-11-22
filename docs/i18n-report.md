@@ -6,12 +6,12 @@ Pemeriksaan membaca objek locale statis; spread atau key komputasi yang menghala
 ## Ringkasan
 
 - File sumber yang dipindai: 176.
-- File dengan objek terjemahan per bahasa: 145.
-- File dengan cabang `ja`: 166.
-- File tanpa terjemahan yang terdeteksi: 6.
+- File dengan objek terjemahan per bahasa: 147.
+- File dengan cabang `ja`: 168.
+- File tanpa terjemahan yang terdeteksi: 4.
 - File dengan objek yang tidak terbaca: 0.
-- Ekstraksi angka: 2380 mismatch dengan ekstraktor lama; 636 mismatch sebelum klasifikasi (setelah normalisasi); 465 setelah klasifikasi. 1876 mismatch lama tidak lagi terdeteksi; 132 mismatch baru terungkap.
-- Selain selisih yang diklasifikasikan, 269 pasangan angka bernilai sama hanya berbeda format. Kelas adaptasi mata uang memakai pasangan Rp/$ dengan nilai sama atau skala nominal 1.000:1; ini bukan validasi kurs.
+- Ekstraksi angka: 2406 mismatch dengan ekstraktor lama; 636 mismatch sebelum klasifikasi (setelah normalisasi); 465 setelah klasifikasi. 1902 mismatch lama tidak lagi terdeteksi; 132 mismatch baru terungkap.
+- Selain selisih yang diklasifikasikan, 273 pasangan angka bernilai sama hanya berbeda format. Kelas adaptasi mata uang memakai pasangan Rp/$ dengan nilai sama atau skala nominal 1.000:1; ini bukan validasi kurs.
 - Label jenjang seperti Kelas 7 / Grade 7 / 中学1年 diabaikan pada perbandingan angka karena penomoran jenjang berbeda menurut bahasa.
 
 ### 10 file dengan ketidaksesuaian terbanyak
@@ -33,7 +33,7 @@ Pemeriksaan membaca objek locale statis; spread atau key komputasi yang menghala
 
 | Jenis | Jumlah | Dihitung sebagai mismatch |
 | --- | ---: | --- |
-| format-saja | 269 | Tidak |
+| format-saja | 273 | Tidak |
 | adaptasi-mata-uang | 156 | Tidak |
 | adaptasi-nama-konteks | 12 | Tidak |
 | label | 3 | Tidak |
@@ -590,16 +590,14 @@ Nilai dipendekkan bila terlalu panjang. Hanya kelas nilai-beda dan ambigu-pemisa
 | --- | --- |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/BukuAnimasiPenjumlahanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/BukuAnimasiPenjumlahanPage.tsx) | halaman konten |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/DefinisiPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/DefinisiPage.tsx) | halaman konten |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/MenghitungRusukPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/MenghitungRusukPage.tsx) | halaman konten |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx) | halaman konten |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/SegitigaSebangunPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/SegitigaSebangunPage.tsx) | halaman konten |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/KesebangunanKekongruenPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/KesebangunanKekongruenPage.tsx) | wrapper |
 
 ## Cakupan per topik
 
 | Topik | File | File dengan cabang ja | Memakai pickLang | Tanpa terjemahan sama sekali |
 | --- | ---: | ---: | ---: | --- |
-| (root) | 26 | 25 | 4 | `KesebangunanKekongruenPage.tsx` |
+| (root) | 26 | 26 | 5 | — |
 | [`aljabar`](../artifacts/numatik/src/pages/buku-animasi-matematika/aljabar) | 8 | 8 | 8 | — |
 | [`aritmetika-sosial`](../artifacts/numatik/src/pages/buku-animasi-matematika/aritmetika-sosial) | 6 | 6 | 0 | — |
 | [`bangun-ruang-sisi-datar`](../artifacts/numatik/src/pages/buku-animasi-matematika/bangun-ruang-sisi-datar) | 5 | 5 | 0 | — |
@@ -611,7 +609,7 @@ Nilai dipendekkan bila terlalu panjang. Hanya kelas nilai-beda dan ambigu-pemisa
 | [`garis-dan-sudut`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut) | 4 | 4 | 0 | — |
 | [`garis-singgung-lingkaran`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-singgung-lingkaran) | 5 | 5 | 4 | — |
 | [`himpunan`](../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan) | 5 | 5 | 0 | — |
-| [`kesebangunan-kekongruenan`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan) | 5 | 1 | 0 | `DefinisiPage.tsx`, `MenghitungRusukPage.tsx`, `PerbandinganRusukSikuSikuPage.tsx`, `SegitigaSebangunPage.tsx` |
+| [`kesebangunan-kekongruenan`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan) | 5 | 2 | 1 | `DefinisiPage.tsx`, `PerbandinganRusukSikuSikuPage.tsx`, `SegitigaSebangunPage.tsx` |
 | [`koordinat-cartesius`](../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius) | 5 | 5 | 4 | — |
 | [`lingkaran`](../artifacts/numatik/src/pages/buku-animasi-matematika/lingkaran) | 7 | 7 | 7 | — |
 | [`peluang`](../artifacts/numatik/src/pages/buku-animasi-matematika/peluang) | 6 | 5 | 0 | — |
@@ -721,6 +719,16 @@ Bahasa: id, en, ja
 
 #### Peta 3: `backLabel` (baris 27)
 Bahasa: id, en, ja
+- Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
+
+### [`../artifacts/numatik/src/pages/buku-animasi-matematika/KesebangunanKekongruenPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/KesebangunanKekongruenPage.tsx)
+
+#### Peta 1: `object@87` (baris 87)
+Bahasa: id, en, ms-MY, ja, zh-CN, ru
+- Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
+
+#### Peta 2: `locale constants@1` (baris 5)
+Bahasa: id, en, ja, ru
 - Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
 
 ### [`../artifacts/numatik/src/pages/buku-animasi-matematika/KoordinatCartesiusPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/KoordinatCartesiusPage.tsx)
@@ -1757,6 +1765,20 @@ Bahasa: id, en, ja
 - **Angka berbeda pada `k2_rrr` (id vs ja; nilai-beda):** id=[], ja=[3]
 - **Angka berbeda pada `k3_s3_adj_angles` (id vs ja; nilai-beda):** id=[], ja=[180]
 - **Angka berbeda pada `pageSub` (id vs ja; nilai-beda):** id=[], ja=[9]
+
+### [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/MenghitungRusukPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/MenghitungRusukPage.tsx)
+
+#### Peta 1: `object@762` (baris 762)
+Bahasa: id, en, ms-MY, ja, zh-CN, ru
+- Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
+
+#### Peta 2: `numberLocales` (baris 771)
+Bahasa: id, en, ms-MY, ja, zh-CN, ru
+- Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
+
+#### Peta 3: `locale constants@1` (baris 12)
+Bahasa: id, en, ja, ru
+- Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
 
 
 ## Topik koordinat-cartesius

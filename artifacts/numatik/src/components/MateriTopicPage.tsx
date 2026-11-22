@@ -3,8 +3,9 @@ import Starfield from "@/components/Starfield";
 import PageNavigation from "@/components/PageNavigation";
 import { BookOpen, ChevronRight } from "lucide-react";
 import { playPopSound } from "@/hooks/useAudio";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type Language } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { pickLang } from "@/lib/pickLang";
 
 const COLOR_PALETTE_DARK = [
   { gradient: "from-blue-900/40 to-indigo-900/30",   border: "border-blue-500/30",   iconBg: "bg-blue-500/20",   iconColor: "text-blue-300",   leftBar: "from-blue-400 to-indigo-500" },
@@ -48,19 +49,52 @@ interface MateriTopicPageProps {
   contextLabel?: string;
 }
 
+const id = {
+  subTopics: "Sub Topik",
+  comingSoon: "Segera hadir",
+  backToAll: "Kembali ke semua materi",
+};
+type T = typeof id;
+const en: T = {
+  subTopics: "Sub Topics",
+  comingSoon: "Coming soon",
+  backToAll: "Back to all topics",
+};
+const msMY: T = {
+  subTopics: "Subtopik",
+  comingSoon: "Akan datang",
+  backToAll: "Kembali ke semua topik",
+};
+const ja: T = {
+  subTopics: "サブトピック",
+  comingSoon: "近日公開",
+  backToAll: "すべての教材に戻る",
+};
+const zhCN: T = {
+  subTopics: "子主题",
+  comingSoon: "即将推出",
+  backToAll: "返回所有主题",
+};
+const ru: T = {
+  subTopics: "Подтемы",
+  comingSoon: "Скоро",
+  backToAll: "Ко всем темам",
+};
+const uiText = {
+  id,
+  en,
+  "ms-MY": msMY,
+  ja,
+  "zh-CN": zhCN,
+  ru,
+} satisfies Record<Language, T>;
+
 const MateriTopicPage = ({ title, emoji, kelas, subtopics, backPath, backLabel, contextLabel }: MateriTopicPageProps) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const { isDark } = useTheme();
   const allTopicsPath = "/buku-animasi-matematika";
-
-  const uiText = {
-    id: { subTopics: "Sub Topik", comingSoon: "Segera hadir", backToAll: "Kembali ke semua materi" },
-    en: { subTopics: "Sub Topics", comingSoon: "Coming soon", backToAll: "Back to all topics" },
-    ja: { subTopics: "サブトピック", comingSoon: "近日公開", backToAll: "すべての教材に戻る" },
-  };
-
-  const ui = uiText[language];
+  const ui = pickLang(uiText, language);
   const COLOR_PALETTE = isDark ? COLOR_PALETTE_DARK : COLOR_PALETTE_LIGHT;
 
   return (
