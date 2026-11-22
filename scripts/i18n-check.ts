@@ -45,6 +45,15 @@ type NumericCase = {
   otherValue: string;
   idNumbers: string[];
   otherNumbers: string[];
+  idNumberCodePoints: string[];
+  otherNumberCodePoints: string[];
+};
+
+type FalsePositiveHypotheses = {
+  minusSigns: number;
+  japaneseCounters: number;
+  englishWordsOrSteps: number;
+  separators: number;
 };
 
 type MismatchExample = {
@@ -67,6 +76,9 @@ type FileAnalysis = {
   discrepancyCount: number;
   mismatchExamples: MismatchExample[];
   numberMismatchesBefore: number;
+  numberMismatchesBeforeDiagnosis: number;
+  numberMismatchesRemovedByDiagnosis: number;
+  numberMismatchesAddedByDiagnosis: number;
   numberMismatchesAfter: number;
   numberMismatchesRemoved: number;
   numberMismatchesAdded: number;
@@ -74,6 +86,7 @@ type FileAnalysis = {
   numberFormatAmbiguities: number;
   numberClasses: Record<NumberClass, number>;
   numericCases: NumericCase[];
+  falsePositiveHypotheses: FalsePositiveHypotheses;
   kind: "halaman konten" | "wrapper";
   report: string[];
 };
@@ -549,8 +562,8 @@ function normalizeNumber(
 ): string | undefined {
   let value = token.replace(/[\u00a0\u202f ]/g, "");
   let sign = "";
-  if (value.startsWith("-") || value.startsWith("+")) {
-    sign = value[0] === "-" ? "-" : "";
+  if (/^[+\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]/u.test(value)) {
+    sign = /^[\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]/u.test(value) ? "-" : "";
     value = value.slice(1);
   }
   if (!value) return undefined;
@@ -622,7 +635,7 @@ function numberTokenMatches(
   const prepared = prepareNumberText(text, language);
   const matches = [
     ...prepared.matchAll(
-      /(?<![A-Za-z0-9_])([+-]?\d+(?:[.,\u00a0\u202f ]\d+)*)(?:st|nd|rd|th)?(?![A-Za-z0-9_])/giu,
+      /(?<![A-Za-z0-9_])([+\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]?\d+(?:[.,\u00a0\u202f ]\d+)*)(?:st|nd|rd|th)?(?![A-Za-z0-9_])/giu,
     ),
   ];
   return matches.map((match) => ({
@@ -678,25 +691,56 @@ const numberWordPatterns: Partial<Record<Language, Array<[RegExp, string]>>> = {
     [/\b(?:ninth|nine)\b/gi, "9"],
     [/\b(?:tenth|ten)\b/gi, "10"],
   ],
-  ja: [
-    [/一/g, "1"],
-    [/二/g, "2"],
-    [/三/g, "3"],
-    [/四/g, "4"],
-    [/五/g, "5"],
-    [/六/g, "6"],
-    [/七/g, "7"],
-    [/八/g, "8"],
-    [/九/g, "9"],
-    [/十/g, "10"],
-  ],
 };
+
+function japaneseKanjiNumber(value: string): number | undefined {
+  const digits: Record<string, number> = {
+    零: 0,
+    〇: 0,
+    一: 1,
+    二: 2,
+    三: 3,
+    四: 4,
+    五: 5,
+    六: 6,
+    七: 7,
+    八: 8,
+    九: 9,
+  };
+  const units: Record<string, number> = { 十: 10, 百: 100, 千: 1000 };
+  let total = 0;
+  let current = 0;
+  for (const character of value) {
+    if (character in digits) {
+      current = digits[character];
+    } else if (character in units) {
+      total += (current || 1) * units[character];
+      current = 0;
+    } else {
+      return undefined;
+    }
+  }
+  return total + current;
+}
 
 function numberWordMatches(
   text: string,
   language: Language,
 ): Array<{ index: number; value: string }> {
   const prepared = prepareNumberText(text, language);
+  if (language === "ja") {
+    const matches = [
+      ...prepared.matchAll(
+        /(?:第\s*)?([〇零一二三四五六七八九十百千]+)\s*(?:つ|個|回|人|番目)/gu,
+      ),
+    ];
+    return matches.flatMap((match) => {
+      const value = japaneseKanjiNumber(match[1]);
+      return value === undefined
+        ? []
+        : [{ index: match.index ?? 0, value: String(value) }];
+    });
+  }
   return (numberWordPatterns[language] ?? [])
     .flatMap(([pattern, value]) => {
       const matches = [...prepared.matchAll(pattern)];
@@ -710,6 +754,20 @@ function numberWordMatches(
       const previous = matches[index - 1];
       return !previous || previous.index !== match.index;
     });
+}
+
+function numberCodePoints(text: string): string[] {
+  const symbols = [
+    ...new Set(
+      text.match(
+        /[0-9０-９〇零一二三四五六七八九十百千万億.,，。٫٬+\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]/gu,
+      ) ?? [],
+    ),
+  ];
+  return symbols.map((symbol) => {
+    const code = symbol.codePointAt(0) ?? 0;
+    return `${symbol}=U+${code.toString(16).toUpperCase().padStart(4, "0")}`;
+  });
 }
 
 function numbersForComparison(
@@ -738,6 +796,135 @@ function numbersForComparison(
   return [...literals, ...words]
     .sort((a, b) => a.index - b.index)
     .map(({ value }) => normalizeNumber(value, language))
+    .filter((value): value is string => value !== undefined);
+}
+
+const previousNumberWordPatterns: Partial<
+  Record<Language, Array<[RegExp, string]>>
+> = {
+  id: numberWordPatterns.id,
+  "ms-MY": numberWordPatterns["ms-MY"],
+  en: numberWordPatterns.en,
+  ja: [
+    [/一/g, "1"],
+    [/二/g, "2"],
+    [/三/g, "3"],
+    [/四/g, "4"],
+    [/五/g, "5"],
+    [/六/g, "6"],
+    [/七/g, "7"],
+    [/八/g, "8"],
+    [/九/g, "9"],
+    [/十/g, "10"],
+  ],
+};
+
+function previousNormalizeNumber(
+  token: string,
+  language: Language,
+): string | undefined {
+  let value = token.replace(/[\u00a0\u202f ]/g, "");
+  let sign = "";
+  if (value.startsWith("-") || value.startsWith("+")) {
+    sign = value[0] === "-" ? "-" : "";
+    value = value.slice(1);
+  }
+  if (!value) return undefined;
+  const comma = value.lastIndexOf(",");
+  const dot = value.lastIndexOf(".");
+  let decimalSeparator: string | undefined;
+  if (comma >= 0 && dot >= 0) {
+    decimalSeparator = language === "id" || language === "ru" ? "," : ".";
+  } else if (comma >= 0) {
+    const trailing = value.length - comma - 1;
+    decimalSeparator =
+      language === "en" ||
+      language === "ja" ||
+      language === "ms-MY" ||
+      language === "zh-CN"
+        ? trailing === 3
+          ? undefined
+          : ","
+        : ",";
+  } else if (dot >= 0) {
+    const trailing = value.length - dot - 1;
+    decimalSeparator =
+      language === "id" || language === "ru"
+        ? trailing === 3
+          ? undefined
+          : "."
+        : ".";
+  }
+  const decimalIndex = decimalSeparator
+    ? value.lastIndexOf(decimalSeparator)
+    : -1;
+  const integerPart = decimalIndex >= 0 ? value.slice(0, decimalIndex) : value;
+  const fractionalPart = decimalIndex >= 0 ? value.slice(decimalIndex + 1) : "";
+  const integer =
+    integerPart.replace(/[.,]/g, "").replace(/^0+(?=\d)/, "") || "0";
+  const fraction = fractionalPart.replace(/[.,]/g, "").replace(/0+$/, "");
+  return `${sign}${integer}${fraction ? `.${fraction}` : ""}`;
+}
+
+function previousNumberTokensIn(
+  text: string,
+  language: Language,
+): Array<{ index: number; value: string }> {
+  const prepared = prepareNumberText(text, language);
+  return [
+    ...prepared.matchAll(
+      /(?<![A-Za-z0-9_])([+-]?\d+(?:[.,\u00a0\u202f ]\d+)*)(?:st|nd|rd|th)?(?![A-Za-z0-9_])/giu,
+    ),
+  ].map((match) => ({
+    index: match.index ?? 0,
+    value: match[1].replace(/(?:st|nd|rd|th)$/i, ""),
+  }));
+}
+
+function previousNumberWordsIn(
+  text: string,
+  language: Language,
+): Array<{ index: number; value: string }> {
+  const prepared = prepareNumberText(text, language);
+  return (previousNumberWordPatterns[language] ?? [])
+    .flatMap(([pattern, value]) =>
+      [...prepared.matchAll(pattern)].map((match) => ({
+        index: match.index ?? 0,
+        value,
+      })),
+    )
+    .sort((left, right) => left.index - right.index)
+    .filter((match, index, matches) => {
+      const previous = matches[index - 1];
+      return !previous || previous.index !== match.index;
+    });
+}
+
+function previousNumbersForComparison(
+  text: string,
+  language: Language,
+  counterpartText: string,
+  counterpartLanguage: Language,
+): string[] {
+  const comparisonText =
+    language === "ja" &&
+    /\d+\s*乗/.test(text) &&
+    /(?:dikuadratkan|kuadrat|squared)/i.test(counterpartText) &&
+    previousNumberWordsIn(counterpartText, counterpartLanguage).length === 0
+      ? text.replace(/\d+\s*乗/g, " ")
+      : text;
+  const literals = previousNumberTokensIn(comparisonText, language);
+  const counterpartLiteralCount = previousNumberTokensIn(
+    counterpartText,
+    counterpartLanguage,
+  ).length;
+  const words = previousNumberWordsIn(comparisonText, language).slice(
+    0,
+    Math.max(0, counterpartLiteralCount - literals.length),
+  );
+  return [...literals, ...words]
+    .sort((left, right) => left.index - right.index)
+    .map(({ value }) => previousNormalizeNumber(value, language))
     .filter((value): value is string => value !== undefined);
 }
 
@@ -951,6 +1138,30 @@ function assertNumberNormalizationExamples(): void {
   if (wordAndDigit.join(",") !== "2") {
     throw new Error(`Number-word comparison failed: ${wordAndDigit.join(",")}`);
   }
+  for (const sign of ["-", "−", "–", "—"]) {
+    if (numbersIn(`${sign}12`, "en").join(",") !== "-12") {
+      throw new Error(`Minus normalization failed for ${JSON.stringify(sign)}`);
+    }
+  }
+  const kanjiCounter = numbersForComparison("3", "id", "三つ", "ja");
+  if (kanjiCounter.join(",") !== "3") {
+    throw new Error(
+      `Japanese counter comparison failed: ${kanjiCounter.join(",")}`,
+    );
+  }
+  if (numberWordMatches("三角形", "ja").length !== 0) {
+    throw new Error(
+      "Kanji digits embedded in ordinary words must not be counted",
+    );
+  }
+  if (numberWordMatches("二十人", "ja")[0]?.value !== "20") {
+    throw new Error("Japanese compound counter parsing failed");
+  }
+  if (
+    numbersForComparison("Step 2", "en", "Langkah dua", "id").join(",") !== "2"
+  ) {
+    throw new Error("English step-number comparison failed");
+  }
 }
 
 assertNumberNormalizationExamples();
@@ -966,12 +1177,16 @@ function analyzeMap(
   numericCases: NumericCase[];
   unreadable: string[];
   numberMismatchesBefore: number;
+  numberMismatchesBeforeDiagnosis: number;
+  numberMismatchesRemovedByDiagnosis: number;
+  numberMismatchesAddedByDiagnosis: number;
   numberMismatchesAfter: number;
   numberMismatchesRemoved: number;
   numberMismatchesAdded: number;
   formatOnlyPairs: number;
   numberFormatAmbiguities: number;
   numberClasses: Record<NumberClass, number>;
+  falsePositiveHypotheses: FalsePositiveHypotheses;
 } {
   const snapshots = new Map<Language, LocaleSnapshot>();
   const unreadable: string[] = [];
@@ -992,11 +1207,20 @@ function analyzeMap(
     "ambigu-pemisah": 0,
   };
   let numberMismatchesBefore = 0;
+  let numberMismatchesBeforeDiagnosis = 0;
+  let numberMismatchesRemovedByDiagnosis = 0;
+  let numberMismatchesAddedByDiagnosis = 0;
   let numberMismatchesAfter = 0;
   let numberMismatchesRemoved = 0;
   let numberMismatchesAdded = 0;
   let formatOnlyPairs = 0;
   let numberFormatAmbiguities = 0;
+  const falsePositiveHypotheses: FalsePositiveHypotheses = {
+    minusSigns: 0,
+    japaneseCounters: 0,
+    englishWordsOrSteps: 0,
+    separators: 0,
+  };
 
   const addExample = (example: MismatchExample) => {
     const category = example.type[0];
@@ -1096,6 +1320,22 @@ function analyzeMap(
       for (const key of sharedValues.sort()) {
         const idText = id.values.get(key) ?? "";
         const otherText = other.values.get(key) ?? "";
+        const previousIdNumbers = previousNumbersForComparison(
+          idText,
+          "id",
+          otherText,
+          language,
+        );
+        const previousOtherNumbers = previousNumbersForComparison(
+          otherText,
+          language,
+          idText,
+          "id",
+        );
+        const previousMismatch =
+          (previousIdNumbers.length || previousOtherNumbers.length) &&
+          previousIdNumbers.join(",") !== previousOtherNumbers.join(",");
+        if (previousMismatch) numberMismatchesBeforeDiagnosis++;
         const legacyIdNumbers = legacyNumbersIn(idText, "id");
         const legacyOtherNumbers = legacyNumbersIn(otherText, language);
         const idTokens = numberTokensIn(idText, "id");
@@ -1118,6 +1358,54 @@ function analyzeMap(
         const mismatch =
           (idNumbers.length || otherNumbers.length) &&
           idNumbers.join(",") !== otherNumbers.join(",");
+        if (previousMismatch && !mismatch) {
+          numberMismatchesRemovedByDiagnosis++;
+        } else if (!previousMismatch && mismatch) {
+          numberMismatchesAddedByDiagnosis++;
+        }
+        if (previousMismatch && !mismatch) {
+          const previousClassification = classifyNumberMismatch(
+            idText,
+            otherText,
+            language,
+            previousNumberTokensIn(idText, "id").map(({ value }) => value),
+            previousNumberTokensIn(otherText, language).map(
+              ({ value }) => value,
+            ),
+            previousIdNumbers,
+            previousOtherNumbers,
+          );
+          if (previousClassification === "nilai-beda") {
+            if (
+              language === "ja" &&
+              /[〇零一二三四五六七八九十百千]\s*(?:つ|個|回|人|番目)/u.test(
+                otherText,
+              )
+            ) {
+              falsePositiveHypotheses.japaneseCounters++;
+            } else if (
+              /[\u2212\u2012\u2013\u2014\uFE63\uFF0D]\d/u.test(
+                `${idText} ${otherText}`,
+              )
+            ) {
+              falsePositiveHypotheses.minusSigns++;
+            } else if (
+              language === "en" &&
+              numberWordMatches(otherText, "en").length > 0
+            ) {
+              falsePositiveHypotheses.englishWordsOrSteps++;
+            } else if (
+              sameDigitsDifferentSeparators(
+                previousNumberTokensIn(idText, "id").map(({ value }) => value),
+                previousNumberTokensIn(otherText, language).map(
+                  ({ value }) => value,
+                ),
+              )
+            ) {
+              falsePositiveHypotheses.separators++;
+            }
+          }
+        }
         if (legacyMismatch) numberMismatchesBefore++;
         if (mismatch) {
           numberMismatchesAfter++;
@@ -1150,6 +1438,8 @@ function analyzeMap(
             otherValue: otherText,
             idNumbers,
             otherNumbers,
+            idNumberCodePoints: numberCodePoints(idText),
+            otherNumberCodePoints: numberCodePoints(otherText),
           });
           const numericNote =
             !idNumbers.length || !otherNumbers.length
@@ -1202,12 +1492,16 @@ function analyzeMap(
     numericCases,
     unreadable,
     numberMismatchesBefore,
+    numberMismatchesBeforeDiagnosis,
+    numberMismatchesRemovedByDiagnosis,
+    numberMismatchesAddedByDiagnosis,
     numberMismatchesAfter,
     numberMismatchesRemoved,
     numberMismatchesAdded,
     formatOnlyPairs,
     numberFormatAmbiguities,
     numberClasses,
+    falsePositiveHypotheses,
   };
 }
 
@@ -1261,11 +1555,20 @@ function analyzeFile(path: string): FileAnalysis {
     "ambigu-pemisah": 0,
   };
   let numberMismatchesBefore = 0;
+  let numberMismatchesBeforeDiagnosis = 0;
+  let numberMismatchesRemovedByDiagnosis = 0;
+  let numberMismatchesAddedByDiagnosis = 0;
   let numberMismatchesAfter = 0;
   let numberMismatchesRemoved = 0;
   let numberMismatchesAdded = 0;
   let formatOnlyPairs = 0;
   let numberFormatAmbiguities = 0;
+  const falsePositiveHypotheses: FalsePositiveHypotheses = {
+    minusSigns: 0,
+    japaneseCounters: 0,
+    englishWordsOrSteps: 0,
+    separators: 0,
+  };
 
   maps.forEach((map, index) => {
     const result = analyzeMap(map, source, declarations);
@@ -1279,11 +1582,23 @@ function analyzeFile(path: string): FileAnalysis {
       numberClasses[classification] += result.numberClasses[classification];
     }
     numberMismatchesBefore += result.numberMismatchesBefore;
+    numberMismatchesBeforeDiagnosis += result.numberMismatchesBeforeDiagnosis;
+    numberMismatchesRemovedByDiagnosis +=
+      result.numberMismatchesRemovedByDiagnosis;
+    numberMismatchesAddedByDiagnosis += result.numberMismatchesAddedByDiagnosis;
     numberMismatchesAfter += result.numberMismatchesAfter;
     numberMismatchesRemoved += result.numberMismatchesRemoved;
     numberMismatchesAdded += result.numberMismatchesAdded;
     formatOnlyPairs += result.formatOnlyPairs;
     numberFormatAmbiguities += result.numberFormatAmbiguities;
+    falsePositiveHypotheses.minusSigns +=
+      result.falsePositiveHypotheses.minusSigns;
+    falsePositiveHypotheses.japaneseCounters +=
+      result.falsePositiveHypotheses.japaneseCounters;
+    falsePositiveHypotheses.englishWordsOrSteps +=
+      result.falsePositiveHypotheses.englishWordsOrSteps;
+    falsePositiveHypotheses.separators +=
+      result.falsePositiveHypotheses.separators;
     unreadable.push(...result.unreadable);
     const line =
       source.getLineAndCharacterOfPosition(map.node.getStart()).line + 1;
@@ -1315,6 +1630,9 @@ function analyzeFile(path: string): FileAnalysis {
     discrepancyCount,
     mismatchExamples,
     numberMismatchesBefore,
+    numberMismatchesBeforeDiagnosis,
+    numberMismatchesRemovedByDiagnosis,
+    numberMismatchesAddedByDiagnosis,
     numberMismatchesAfter,
     numberMismatchesRemoved,
     numberMismatchesAdded,
@@ -1322,6 +1640,7 @@ function analyzeFile(path: string): FileAnalysis {
     numberFormatAmbiguities,
     numberClasses,
     numericCases,
+    falsePositiveHypotheses,
     kind: text.includes("MateriTopicPage") ? "wrapper" : "halaman konten",
     report,
   };
@@ -1381,10 +1700,30 @@ const totalLegacyNumberMismatches = allFiles.reduce(
   (total, file) => total + file.numberMismatchesBefore,
   0,
 );
+const totalNumberMismatchesBeforeDiagnosis = allFiles.reduce(
+  (total, file) => total + file.numberMismatchesBeforeDiagnosis,
+  0,
+);
+const totalNumberMismatchesRemovedByDiagnosis = allFiles.reduce(
+  (total, file) => total + file.numberMismatchesRemovedByDiagnosis,
+  0,
+);
+const totalNumberMismatchesAddedByDiagnosis = allFiles.reduce(
+  (total, file) => total + file.numberMismatchesAddedByDiagnosis,
+  0,
+);
 const totalNormalizedNumberMismatches = allFiles.reduce(
   (total, file) => total + file.numberMismatchesAfter,
   0,
 );
+if (
+  totalNumberMismatchesBeforeDiagnosis -
+    totalNumberMismatchesRemovedByDiagnosis +
+    totalNumberMismatchesAddedByDiagnosis !==
+  totalNormalizedNumberMismatches
+) {
+  throw new Error("Number-mismatch before/after totals do not reconcile");
+}
 const totalRemovedNumberMismatches = allFiles.reduce(
   (total, file) => total + file.numberMismatchesRemoved,
   0,
@@ -1417,6 +1756,55 @@ const totalNumberClasses = allFiles.reduce<Record<NumberClass, number>>(
     "ambigu-pemisah": 0,
   },
 );
+const totalFalsePositiveHypotheses = allFiles.reduce<FalsePositiveHypotheses>(
+  (totals, file) => ({
+    minusSigns: totals.minusSigns + file.falsePositiveHypotheses.minusSigns,
+    japaneseCounters:
+      totals.japaneseCounters + file.falsePositiveHypotheses.japaneseCounters,
+    englishWordsOrSteps:
+      totals.englishWordsOrSteps +
+      file.falsePositiveHypotheses.englishWordsOrSteps,
+    separators: totals.separators + file.falsePositiveHypotheses.separators,
+  }),
+  {
+    minusSigns: 0,
+    japaneseCounters: 0,
+    englishWordsOrSteps: 0,
+    separators: 0,
+  },
+);
+
+function sampledNumericCases(): Array<{
+  file: FileAnalysis;
+  numericCase: NumericCase;
+}> {
+  let state = 0x31_0a_7;
+  const random = () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 0x1_0000_0000;
+  };
+  const candidates = allFiles
+    .map((file) => ({
+      file,
+      cases: file.numericCases.filter(
+        (numericCase) => numericCase.classification === "nilai-beda",
+      ),
+    }))
+    .filter(({ cases }) => cases.length > 0);
+  for (let index = candidates.length - 1; index > 0; index--) {
+    const swap = Math.floor(random() * (index + 1));
+    [candidates[index], candidates[swap]] = [
+      candidates[swap],
+      candidates[index],
+    ];
+  }
+  return candidates.slice(0, 30).map(({ file, cases }) => ({
+    file,
+    numericCase: cases[Math.floor(random() * cases.length)],
+  }));
+}
+
+const sampledCases = sampledNumericCases();
 
 function selectMismatchExamples(file: FileAnalysis): MismatchExample[] {
   const selected: MismatchExample[] = [];
@@ -1458,7 +1846,7 @@ const output: string[] = [
   `- File dengan cabang \`ja\`: ${allFiles.filter((file) => file.hasJaBranch).length}.`,
   `- File tanpa terjemahan yang terdeteksi: ${allFiles.filter((file) => !file.hasTranslation).length}.`,
   `- File dengan objek yang tidak terbaca: ${allFiles.filter((file) => file.unreadable.length > 0).length}.`,
-  `- Ekstraksi angka: ${totalLegacyNumberMismatches} mismatch dengan ekstraktor lama; ${totalNormalizedNumberMismatches} mismatch sebelum klasifikasi (setelah normalisasi); ${totalMismatchCounts.numbers} setelah klasifikasi. ${totalRemovedNumberMismatches} mismatch lama tidak lagi terdeteksi; ${totalAddedNumberMismatches} mismatch baru terungkap.`,
+  `- Ekstraksi angka: ${totalLegacyNumberMismatches} mismatch dengan ekstraktor digit lama; ${totalNumberMismatchesBeforeDiagnosis} mismatch dengan pembanding sebelum diagnosis; ${totalNormalizedNumberMismatches} setelah perbaikan parser; ${totalMismatchCounts.numbers} setelah klasifikasi. ${totalRemovedNumberMismatches} mismatch digit lama tidak lagi terdeteksi; ${totalAddedNumberMismatches} mismatch baru terungkap.`,
   `- Selain selisih yang diklasifikasikan, ${totalNumberClasses["format-saja"]} pasangan angka bernilai sama hanya berbeda format. Kelas adaptasi mata uang memakai pasangan Rp/$ dengan nilai sama atau skala nominal 1.000:1; ini bukan validasi kurs.`,
   "- Label jenjang seperti Kelas 7 / Grade 7 / 中学1年 diabaikan pada perbandingan angka karena penomoran jenjang berbeda menurut bahasa.",
   "",
@@ -1475,6 +1863,13 @@ const output: string[] = [
         "| Tidak ada ketidaksesuaian terdeteksi | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |",
       ]),
   "",
+  "### Rekonsiliasi sebelum dan sesudah perbaikan parser",
+  "",
+  "| Tahap | Mismatch numeric | Hilang setelah diagnosis | Baru terungkap |",
+  "| --- | ---: | ---: | ---: |",
+  `| Sebelum penyesuaian parser | ${totalNumberMismatchesBeforeDiagnosis} | — | — |`,
+  `| Sesudah penyesuaian parser | ${totalNormalizedNumberMismatches} | ${totalNumberMismatchesRemovedByDiagnosis} | ${totalNumberMismatchesAddedByDiagnosis} |`,
+  "",
   "### Jumlah ketidaksesuaian per jenis (seluruh file)",
   "",
   "| Jenis | Jumlah | Dihitung sebagai mismatch |",
@@ -1485,9 +1880,35 @@ const output: string[] = [
   `| label | ${totalNumberClasses.label} | Tidak |`,
   `| nilai-beda | ${totalNumberClasses["nilai-beda"]} | Ya |`,
   `| ambigu-pemisah | ${totalNumberClasses["ambigu-pemisah"]} | Ya |`,
+  `| **Jumlah kelas numeric sebelum pengecualian format-saja** | **${totalNormalizedNumberMismatches}** | — |`,
+  `| **Jumlah setelah klasifikasi** | **${totalNumberClasses["nilai-beda"] + totalNumberClasses["ambigu-pemisah"]}** | **${totalMismatchCounts.numbers}** |`,
   `| (a) Key ada di id tetapi tidak ada di locale lain | ${totalMismatchCounts.idOnlyKeys} | Ya |`,
   `| (b) Key ada di locale lain tetapi tidak ada di id | ${totalMismatchCounts.extraKeys} | Ya |`,
   `| (c) Panjang array berbeda | ${totalMismatchCounts.arrayLengths} | Ya |`,
+  "",
+  "### Uji hipotesis false positive",
+  "",
+  "Jumlah kasus nilai-beda lama yang berubah menjadi sama setelah setiap penyesuaian. Penghitungan tiap baris independen; kelas pemisah tetap ambigu bila teks tidak menentukan tafsirnya.",
+  "",
+  "| Hipotesis | Kasus nilai-beda hilang |",
+  "| --- | ---: |",
+  `| Tanda minus ASCII/Unicode (\`-\`, \`−\`, \`–\`, \`—\`) | ${totalFalsePositiveHypotheses.minusSigns} |`,
+  `| Penghitung Jepang dan angka kanji | ${totalFalsePositiveHypotheses.japaneseCounters} |`,
+  `| Angka-kata Inggris / nomor langkah | ${totalFalsePositiveHypotheses.englishWordsOrSteps} |`,
+  `| Pemisah ribuan/desimal | ${totalFalsePositiveHypotheses.separators} |`,
+  "",
+  "Uji separator sengaja tidak mengubah tafsir berdasarkan dugaan: kandidat ambigu tetap dihitung sebagai ambigu-pemisah, bukan dihapus sebagai false positive.",
+  "",
+  "### Sampel acak merata: 30 kasus nilai-beda dari file berbeda",
+  "",
+  "Pemilihan memakai seed tetap untuk hasil yang dapat direproduksi; satu kasus dipilih per file.",
+  "",
+  "| File | Baris | Key | Nilai id lengkap | Nilai en/ja lengkap | Code point angka id | Code point angka en/ja |",
+  "| --- | ---: | --- | --- | --- | --- | --- |",
+  ...sampledCases.map(
+    ({ file, numericCase }) =>
+      `| [\`${markdownPath(file.path)}\`](${markdownPath(file.path)}) | ${numericCase.line} | \`${markdownCell(numericCase.key)}\` | ${markdownCell(numericCase.idValue)} | ${markdownCell(numericCase.otherValue)} | ${numericCase.idNumberCodePoints.join(", ") || "—"} | ${numericCase.otherNumberCodePoints.join(", ") || "—"} |`,
+  ),
   "",
   "Klasifikasi numeric mismatch: token digit yang sama tetapi ditafsirkan berbeda menurut locale menjadi ambigu-pemisah; label soal/langkah/figur yang bila dihapus menyamakan angka menjadi label; pasangan Rp/$ dengan rasio nominal 1.000:1 menjadi adaptasi-mata-uang; nama orang lokal/netral yang dikenali atau classifier jumlah Jepang yang tidak dinyatakan di id menjadi adaptasi-nama-konteks. Sisa perbedaan menjadi nilai-beda. Pasangan angka sama yang hanya berbeda separator dicatat sebagai format-saja.",
   "",
