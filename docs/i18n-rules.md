@@ -9,6 +9,32 @@ Berlaku untuk seluruh konten aplikasi dalam bahasa `id`, `en`, `ms-MY`, `ja`,
   `pickLang`.
 - Jangan menambahkan rantai ternary seperti
   `language === "en" ? ... : language === "ja" ? ...`.
+- Setiap file konten terjemahan mendefinisikan satu tipe bersama `T`. Bahasa
+  Indonesia menjadi sumber tipe:
+
+  ```ts
+  const id = {/* konten Indonesia */};
+  type T = typeof id;
+
+  const en: T = {/* konten Inggris */};
+  const msMY: T = {/* konten Melayu Malaysia */};
+  const ja: T = {/* konten Jepang */};
+  const zhCN: T = {/* konten Mandarin sederhana */};
+  const ru: T = {/* konten Rusia */};
+
+  const translations = {
+    id,
+    en,
+    "ms-MY": msMY,
+    ja,
+    "zh-CN": zhCN,
+    ru,
+  } satisfies Record<Language, T>;
+  ```
+
+- Jangan membuat tipe terpisah untuk setiap bahasa atau memakai cast
+  `as Record<...>` untuk menutupi ketidakcocokan struktur. Perbaiki bentuk data
+  agar setiap locale memenuhi `T`.
 - Urutan fallback:
   - `zh-CN` → `en` → `id`
   - `ru` → `en` → `id`
@@ -29,36 +55,37 @@ diterjemahkan.
 - Tulis satuan dalam KaTeX dengan `\,\mathrm{}`.
 - Label kelas:
 
-  | Bahasa | Kelas 7 | Kelas 8 | Kelas 9 |
-  | --- | --- | --- | --- |
-  | `id` | Kelas 7 | Kelas 8 | Kelas 9 |
-  | `en` | Grade 7 | Grade 8 | Grade 9 |
+  | Bahasa  | Kelas 7     | Kelas 8     | Kelas 9     |
+  | ------- | ----------- | ----------- | ----------- |
+  | `id`    | Kelas 7     | Kelas 8     | Kelas 9     |
+  | `en`    | Grade 7     | Grade 8     | Grade 9     |
   | `ms-MY` | Tingkatan 1 | Tingkatan 2 | Tingkatan 3 |
-  | `ja` | 中学1年 | 中学2年 | 中学3年 |
-  | `zh-CN` | 七年级 | 八年级 | 九年级 |
-  | `ru` | 7 класс | 8 класс | 9 класс |
+  | `ja`    | 中学1年     | 中学2年     | 中学3年     |
+  | `zh-CN` | 七年级      | 八年级      | 九年级      |
+  | `ru`    | 7 класс     | 8 класс     | 9 класс     |
 
 - Badge kesulitan:
 
-  | Bahasa | Mudah | Sedang | Sulit |
-  | --- | --- | --- | --- |
-  | `en` | Easy | Medium | Hard |
-  | `ja` | 基本 | 標準 | 発展 |
-  | `ms-MY` | Mudah | Sederhana | Sukar |
-  | `zh-CN` | 简单 | 中等 | 困难 |
-  | `ru` | Лёгкий | Средний | Сложный |
+  | Bahasa  | Mudah  | Sedang    | Sulit   |
+  | ------- | ------ | --------- | ------- |
+  | `en`    | Easy   | Medium    | Hard    |
+  | `ja`    | 基本   | 標準      | 発展    |
+  | `ms-MY` | Mudah  | Sederhana | Sukar   |
+  | `zh-CN` | 简单   | 中等      | 困难    |
+  | `ru`    | Лёгкий | Средний   | Сложный |
 
 - Gunakan `Rp` untuk mata uang dalam bahasa Indonesia dan `$` untuk semua
   bahasa lain.
 - Format angka:
 
-  | Bahasa | Format |
-  | --- | --- |
-  | `id` | `1.234,5` |
-  | `en`, `ms-MY`, `ja`, `zh-CN` | `1,234.5` |
-  | `ru` | `1 234,5` (spasi tipis sebagai pemisah ribuan) |
+  | Bahasa                       | Format                                         |
+  | ---------------------------- | ---------------------------------------------- |
+  | `id`                         | `1.234,5`                                      |
+  | `en`, `ms-MY`, `ja`, `zh-CN` | `1,234.5`                                      |
+  | `ru`                         | `1 234,5` (spasi tipis sebagai pemisah ribuan) |
 
   Dalam KaTeX, format Rusia ditulis `1\,234{,}5`.
+
 - Ganti nama tokoh lokal Indonesia dengan nama netral yang sesuai di semua
   bahasa.
 
