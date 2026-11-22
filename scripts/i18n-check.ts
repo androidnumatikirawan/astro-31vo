@@ -24,6 +24,7 @@ type LocaleSnapshot = {
 type NumberClass =
   | "format-saja"
   | "adaptasi-mata-uang"
+  | "adaptasi-skala"
   | "adaptasi-nama-konteks"
   | "label"
   | "nilai-beda"
@@ -568,6 +569,30 @@ function normalizeNumber(
   }
   if (!value) return undefined;
 
+  if (language === "ja" && /[億万]/u.test(value)) {
+    const unitMatches = [
+      ...value.matchAll(/(\d+(?:,\d{3})*(?:\.\d+)?)\s*([億万])/gu),
+    ];
+    const matchedValue = unitMatches
+      .map((match) => match[0].replace(/\s/g, ""))
+      .join("");
+    if (
+      !unitMatches.length ||
+      matchedValue !== value.replace(/\s/g, "")
+    ) {
+      return undefined;
+    }
+    const total = unitMatches.reduce((sum, match) => {
+      const multiplier = match[2] === "億" ? 100_000_000 : 10_000;
+      return sum + Number(match[1].replace(/,/g, "")) * multiplier;
+    }, 0);
+    if (!Number.isFinite(total)) return undefined;
+    const normalized = String(total)
+      .replace(/(\.\d*?)0+$/, "$1")
+      .replace(/\.$/, "");
+    return `${sign}${normalized}`;
+  }
+
   const decimalSeparator =
     language === "id" || language === "ru" ? "," : ".";
   const decimalIndex = value.lastIndexOf(decimalSeparator);
@@ -625,7 +650,9 @@ function numberTokenMatches(
       ? String.raw`(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d+)?`
       : language === "ru"
         ? String.raw`(?:\d{1,3}(?:[ \u00a0\u202f]\d{3})+|\d+)(?:,\d+)?`
-        : String.raw`(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?`;
+        : language === "ja"
+          ? String.raw`(?:(?:\d+(?:,\d{3})*(?:\.\d+)?\s*[億万])+|(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)`
+          : String.raw`(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?`;
   const pattern = new RegExp(
     String.raw`(?<![A-Za-z0-9_])([+\-\u2212\u2012\u2013\u2014\uFE63\uFF0D]?${numericPattern})(?:st|nd|rd|th)?(?![A-Za-z0-9_])`,
     "giu",
@@ -1021,6 +1048,78 @@ function isCurrencyAdaptation(
   );
 }
 
+function divideByPowerOfTen(
+  value: string,
+  exponent: number,
+): string | undefined {
+  const match = value.match(/^(-?)(\d+)(?:\.(\d+))?$/);
+  if (!match) return undefined;
+  const [, sign, integer, fraction = ""] = match;
+  const digits = `${integer}${fraction}`;
+  const decimalPosition = integer.length - exponent;
+  const shiftedInteger =
+    decimalPosition > 0 ? digits.slice(0, decimalPosition) : "0";
+  const shiftedFraction =
+    decimalPosition > 0
+      ? digits.slice(decimalPosition)
+      : `${"0".repeat(-decimalPosition)}${digits}`;
+  const normalizedInteger =
+    shiftedInteger.replace(/^0+(?=\d)/, "") || "0";
+  const normalizedFraction = shiftedFraction.replace(/0+$/, "");
+  return `${sign}${normalizedInteger}${normalizedFraction ? `.${normalizedFraction}` : ""}`;
+}
+
+const scaleAdaptationFactors = [10, 100, 1000, 10000, 1000000] as const;
+
+function isScaleAdaptation(
+  idNumbers: string[],
+  otherNumbers: string[],
+): boolean {
+  if (!idNumbers.length || idNumbers.length !== otherNumbers.length) {
+    return false;
+  }
+
+  return scaleAdaptationFactors.some((factor) => {
+    const candidates = idNumbers
+      .map((idNumber) => {
+        const values = [{ value: idNumber, scaled: false }];
+        const scaledValue = divideByPowerOfTen(
+          idNumber,
+          Math.log10(factor),
+        );
+        if (scaledValue !== undefined && scaledValue !== idNumber) {
+          values.push({ value: scaledValue, scaled: true });
+        }
+        return values
+          .map(({ value, scaled }) => ({
+            index: otherNumbers.indexOf(value),
+            scaled,
+          }))
+          .filter(({ index }) => index >= 0);
+      })
+      .sort((first, second) => first.length - second.length);
+    if (candidates.some((values) => !values.length)) return false;
+
+    const findMatching = (
+      index: number,
+      usedIndices: Set<number>,
+      scaledValueFound: boolean,
+    ): boolean => {
+      if (index === candidates.length) return scaledValueFound;
+      return candidates[index].some(
+        ({ index: otherIndex, scaled }) =>
+          !usedIndices.has(otherIndex) &&
+          findMatching(
+            index + 1,
+            new Set([...usedIndices, otherIndex]),
+            scaledValueFound || scaled,
+          ),
+      );
+    };
+    return findMatching(0, new Set(), false);
+  });
+}
+
 function classifyNumberMismatch(
   idText: string,
   otherText: string,
@@ -1053,6 +1152,9 @@ function classifyNumberMismatch(
   if (isCurrencyAdaptation(idText, otherText, idNumbers, otherNumbers)) {
     return "adaptasi-mata-uang";
   }
+  if (isScaleAdaptation(idNumbers, otherNumbers)) {
+    return "adaptasi-skala";
+  }
   if (
     containsOneOf(idText, localPersonNames) &&
     containsOneOf(otherText, adaptedPersonNames)
@@ -1078,6 +1180,8 @@ const numberNormalizationExamples: Array<[string, Language, string[]]> = [
   ["①②③", "en", ["1", "2", "3"]],
   ["Rp1.234.500", "id", ["1234500"]],
   ["$1,234,500", "en", ["1234500"]],
+  ["300万", "ja", ["3000000"]],
+  ["1億2,345万", "ja", ["123450000"]],
   ["1\\,234{,}5", "ru", ["1234.5"]],
   ["4,\\underline{6}38", "id", ["4.638"]],
   ["2nd decimal", "en", ["2"]],
@@ -1127,6 +1231,23 @@ function assertNumberNormalizationExamples(): void {
     if (actual.join(",") !== expected.join(",")) {
       throw new Error(
         `Number normalization failed for ${language} value ${JSON.stringify(text)}: ${actual.join(",")}`,
+      );
+    }
+  }
+  const scaleAdaptationExamples: Array<
+    [string[], string[], boolean]
+  > = [
+    [["3000000", "50"], ["300", "50"], true],
+    [["1000000", "2000000"], ["1", "2"], true],
+    [["10", "100"], ["1", "10"], true],
+    [["100", "200"], ["10", "20"], true],
+    [["100", "200"], ["10", "21"], false],
+    [["100"], ["1000"], false],
+  ];
+  for (const [idNumbers, otherNumbers, expected] of scaleAdaptationExamples) {
+    if (isScaleAdaptation(idNumbers, otherNumbers) !== expected) {
+      throw new Error(
+        `Scale adaptation failed for id=[${idNumbers}] and other=[${otherNumbers}]`,
       );
     }
   }
@@ -1197,6 +1318,7 @@ function analyzeMap(
   const numberClasses: Record<NumberClass, number> = {
     "format-saja": 0,
     "adaptasi-mata-uang": 0,
+    "adaptasi-skala": 0,
     "adaptasi-nama-konteks": 0,
     label: 0,
     "nilai-beda": 0,
@@ -1536,6 +1658,7 @@ function analyzeFile(path: string): FileAnalysis {
   const numberClasses: Record<NumberClass, number> = {
     "format-saja": 0,
     "adaptasi-mata-uang": 0,
+    "adaptasi-skala": 0,
     "adaptasi-nama-konteks": 0,
     label: 0,
     "nilai-beda": 0,
@@ -1745,6 +1868,7 @@ const totalNumberClasses = allFiles.reduce<Record<NumberClass, number>>(
   {
     "format-saja": 0,
     "adaptasi-mata-uang": 0,
+    "adaptasi-skala": 0,
     "adaptasi-nama-konteks": 0,
     label: 0,
     "nilai-beda": 0,
@@ -1753,6 +1877,7 @@ const totalNumberClasses = allFiles.reduce<Record<NumberClass, number>>(
 );
 const totalAdaptationNumberMismatches =
   totalNumberClasses["adaptasi-mata-uang"] +
+  totalNumberClasses["adaptasi-skala"] +
   totalNumberClasses["adaptasi-nama-konteks"] +
   totalNumberClasses.label;
 const totalClassifiedNumberMismatches =
@@ -1884,20 +2009,20 @@ const output: string[] = [
   `- File tanpa terjemahan yang terdeteksi: ${allFiles.filter((file) => !file.hasTranslation).length}.`,
   `- File dengan objek yang tidak terbaca: ${allFiles.filter((file) => file.unreadable.length > 0).length}.`,
   `- Ekstraksi angka: ${totalLegacyNumberMismatches} mismatch dengan ekstraktor digit lama; ${totalNumberMismatchesBeforeDiagnosis} mismatch dengan pembanding sebelum diagnosis; ${totalNormalizedNumberMismatches} setelah perbaikan parser; ${totalMismatchCounts.numbers} setelah klasifikasi. ${totalRemovedNumberMismatches} mismatch digit lama tidak lagi terdeteksi; ${totalAddedNumberMismatches} mismatch baru terungkap.`,
-  `- Selain selisih yang diklasifikasikan, ${totalNumberClasses["format-saja"]} pasangan angka bernilai sama hanya berbeda format. Kelas adaptasi mata uang memakai pasangan Rp/$ dengan nilai sama atau skala nominal 1.000:1; ini bukan validasi kurs.`,
+  `- Selain selisih yang diklasifikasikan, ${totalNumberClasses["format-saja"]} pasangan angka bernilai sama hanya berbeda format. Adaptasi mata uang memakai pasangan Rp/$ dengan nilai sama atau skala nominal 1.000:1; adaptasi-skala memakai faktor pangkat 10 yang konsisten pada seluruh angka di key.`,
   "- Label jenjang seperti Kelas 7 / Grade 7 / 中学1年 diabaikan pada perbandingan angka karena penomoran jenjang berbeda menurut bahasa.",
   "",
   "### 10 file dengan ketidaksesuaian terbanyak",
   "",
-  "| File | Total | (a) Key id hilang | (b) Key ekstra | (c) Array | Format saja | Mata uang | Nama/konteks | Label | Nilai beda | Ambigu pemisah |",
-  "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+  "| File | Total | (a) Key id hilang | (b) Key ekstra | (c) Array | Format saja | Mata uang | Skala | Nama/konteks | Label | Nilai beda | Ambigu pemisah |",
+  "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
   ...(topDiscrepancies.length
     ? topDiscrepancies.map(
         (file) =>
-          `| [\`${markdownPath(file.path)}\`](${markdownPath(file.path)}) | ${file.discrepancyCount} | ${file.mismatchCounts.idOnlyKeys} | ${file.mismatchCounts.extraKeys} | ${file.mismatchCounts.arrayLengths} | ${file.numberClasses["format-saja"]} | ${file.numberClasses["adaptasi-mata-uang"]} | ${file.numberClasses["adaptasi-nama-konteks"]} | ${file.numberClasses.label} | ${file.numberClasses["nilai-beda"]} | ${file.numberClasses["ambigu-pemisah"]} |`,
+          `| [\`${markdownPath(file.path)}\`](${markdownPath(file.path)}) | ${file.discrepancyCount} | ${file.mismatchCounts.idOnlyKeys} | ${file.mismatchCounts.extraKeys} | ${file.mismatchCounts.arrayLengths} | ${file.numberClasses["format-saja"]} | ${file.numberClasses["adaptasi-mata-uang"]} | ${file.numberClasses["adaptasi-skala"]} | ${file.numberClasses["adaptasi-nama-konteks"]} | ${file.numberClasses.label} | ${file.numberClasses["nilai-beda"]} | ${file.numberClasses["ambigu-pemisah"]} |`,
       )
     : [
-        "| Tidak ada ketidaksesuaian terdeteksi | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |",
+        "| Tidak ada ketidaksesuaian terdeteksi | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |",
       ]),
   "",
   "### Rekonsiliasi sebelum dan sesudah perbaikan parser",
@@ -1909,10 +2034,11 @@ const output: string[] = [
   "",
   "### Jumlah ketidaksesuaian per jenis (seluruh file)",
   "",
-  "| Jenis | Jumlah | Dihitung sebagai mismatch |",
+  "| Jenis / total | Jumlah | Dihitung sebagai mismatch |",
   "| --- | ---: | --- |",
   `| format-saja | ${totalNumberClasses["format-saja"]} | Tidak |`,
   `| adaptasi-mata-uang | ${totalNumberClasses["adaptasi-mata-uang"]} | Tidak |`,
+  `| adaptasi-skala | ${totalNumberClasses["adaptasi-skala"]} | Tidak |`,
   `| adaptasi-nama-konteks | ${totalNumberClasses["adaptasi-nama-konteks"]} | Tidak |`,
   `| label | ${totalNumberClasses.label} | Tidak |`,
   `| nilai-beda | ${totalNumberClasses["nilai-beda"]} | Ya |`,
@@ -1925,7 +2051,7 @@ const output: string[] = [
   `| **Mismatch struktural** | **${totalStructuralMismatches}** | Ya |`,
   `| **Total mismatch terlapor** | **${totalReportedMismatches}** | **${totalReportedMismatches}** |`,
   "",
-  `Rekonsiliasi: ${totalNormalizedNumberMismatches} = ${totalNumberClasses["adaptasi-mata-uang"]} adaptasi mata uang + ${totalNumberClasses["adaptasi-nama-konteks"]} adaptasi nama/konteks + ${totalNumberClasses.label} label + ${totalNumberClasses["nilai-beda"]} nilai-beda + ${totalNumberClasses["ambigu-pemisah"]} ambigu-pemisah. Setelah ${totalAdaptationNumberMismatches} adaptasi dikecualikan, tersisa ${totalClassifiedNumberMismatches} mismatch numeric (${totalNumberClasses["nilai-beda"]} nilai-beda + ${totalNumberClasses["ambigu-pemisah"]} ambigu-pemisah); ${totalFormatOnlyPairs} pasangan format-saja bernilai sama dan tidak masuk hitungan mismatch. Ditambah ${totalStructuralMismatches} mismatch struktural, totalnya ${totalReportedMismatches}.`,
+  `Rekonsiliasi: ${totalNormalizedNumberMismatches} = ${totalNumberClasses["adaptasi-mata-uang"]} adaptasi mata uang + ${totalNumberClasses["adaptasi-skala"]} adaptasi-skala + ${totalNumberClasses["adaptasi-nama-konteks"]} adaptasi nama/konteks + ${totalNumberClasses.label} label + ${totalNumberClasses["nilai-beda"]} nilai-beda + ${totalNumberClasses["ambigu-pemisah"]} ambigu-pemisah. Jumlah kelas tersebut sama dengan total mismatch numerik sebelum klasifikasi. Setelah ${totalAdaptationNumberMismatches} adaptasi dikecualikan, tersisa ${totalClassifiedNumberMismatches} mismatch numerik (${totalNumberClasses["nilai-beda"]} nilai-beda + ${totalNumberClasses["ambigu-pemisah"]} ambigu-pemisah); ${totalFormatOnlyPairs} pasangan format-saja bernilai sama dan tidak masuk hitungan mismatch. Ditambah ${totalStructuralMismatches} mismatch struktural, totalnya ${totalReportedMismatches}.`,
   "",
   "### Uji hipotesis false positive",
   "",
@@ -1963,7 +2089,7 @@ const output: string[] = [
       `| [\`${markdownPath(file.path)}\`](${markdownPath(file.path)}) | ${numericCase.line} | \`${markdownCell(numericCase.key)}\` | ${markdownCell(numericCase.idValue)} | ${markdownCell(numericCase.otherValue)} | ${numericCase.idNumberCodePoints.join(", ") || "—"} | ${numericCase.otherNumberCodePoints.join(", ") || "—"} |`,
   ),
   "",
-  "Klasifikasi numeric mismatch: token digit yang sama tetapi ditafsirkan berbeda menurut locale menjadi ambigu-pemisah; label soal/langkah/figur yang bila dihapus menyamakan angka menjadi label; pasangan Rp/$ dengan rasio nominal 1.000:1 menjadi adaptasi-mata-uang; nama orang lokal/netral yang dikenali atau classifier jumlah Jepang yang tidak dinyatakan di id menjadi adaptasi-nama-konteks. Sisa perbedaan menjadi nilai-beda. Pasangan angka sama yang hanya berbeda separator dicatat sebagai format-saja.",
+  "Klasifikasi numeric mismatch: token digit yang sama tetapi ditafsirkan berbeda menurut locale menjadi ambigu-pemisah; pasangan yang seluruh nilainya sama atau berubah secara konsisten dengan faktor 10, 100, 1.000, 10.000, atau 1.000.000 menjadi adaptasi-skala; label soal/langkah/figur yang bila dihapus menyamakan angka menjadi label; pasangan Rp/$ dengan rasio nominal 1.000:1 menjadi adaptasi-mata-uang; nama orang lokal/netral yang dikenali atau classifier jumlah Jepang yang tidak dinyatakan di id menjadi adaptasi-nama-konteks. Sisa perbedaan menjadi nilai-beda. Pasangan angka sama yang hanya berbeda separator dicatat sebagai format-saja.",
   "",
   "### Seluruh kasus nilai-beda dan ambigu-pemisah",
   "",
