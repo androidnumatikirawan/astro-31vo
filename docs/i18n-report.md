@@ -6,12 +6,12 @@ Pemeriksaan membaca objek locale statis; spread atau key komputasi yang menghala
 ## Ringkasan
 
 - File sumber yang dipindai: 176.
-- File dengan objek terjemahan per bahasa: 148.
-- File dengan cabang `ja`: 169.
-- File tanpa terjemahan yang terdeteksi: 3.
+- File dengan objek terjemahan per bahasa: 150.
+- File dengan cabang `ja`: 171.
+- File tanpa terjemahan yang terdeteksi: 1.
 - File dengan objek yang tidak terbaca: 0.
-- Ekstraksi angka: 2432 mismatch dengan ekstraktor digit lama; 636 mismatch dengan pembanding sebelum diagnosis; 621 setelah perbaikan parser; 450 setelah klasifikasi. 1943 mismatch digit lama tidak lagi terdeteksi; 132 mismatch baru terungkap.
-- Selain selisih yang diklasifikasikan, 273 pasangan angka bernilai sama hanya berbeda format. Kelas adaptasi mata uang memakai pasangan Rp/$ dengan nilai sama atau skala nominal 1.000:1; ini bukan validasi kurs.
+- Ekstraksi angka: 2539 mismatch dengan ekstraktor digit lama; 650 mismatch dengan pembanding sebelum diagnosis; 635 setelah perbaikan parser; 464 setelah klasifikasi. 2048 mismatch digit lama tidak lagi terdeteksi; 144 mismatch baru terungkap.
+- Selain selisih yang diklasifikasikan, 319 pasangan angka bernilai sama hanya berbeda format. Kelas adaptasi mata uang memakai pasangan Rp/$ dengan nilai sama atau skala nominal 1.000:1; ini bukan validasi kurs.
 - Label jenjang seperti Kelas 7 / Grade 7 / 中学1年 diabaikan pada perbandingan angka karena penomoran jenjang berbeda menurut bahasa.
 
 ### 10 file dengan ketidaksesuaian terbanyak
@@ -21,33 +21,33 @@ Pemeriksaan membaca objek locale statis; spread atau key komputasi yang menghala
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PenjumlahanPenguranganBentukDesimalPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PenjumlahanPenguranganBentukDesimalPage.tsx) | 44 | 0 | 0 | 0 | 3 | 0 | 0 | 0 | 11 | 33 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan/JenisHimpunanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan/JenisHimpunanPage.tsx) | 18 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 18 | 0 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembulatanBentukDesimalPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembulatanBentukDesimalPage.tsx) | 16 | 0 | 0 | 0 | 7 | 0 | 0 | 0 | 2 | 14 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 16 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 16 | 0 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembagianBentukDesimalPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembagianBentukDesimalPage.tsx) | 15 | 0 | 0 | 0 | 19 | 0 | 0 | 0 | 9 | 6 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/SkalaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/SkalaPage.tsx) | 13 | 0 | 0 | 0 | 11 | 0 | 0 | 0 | 13 | 0 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/spldv/MetodeEliminasiPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/spldv/MetodeEliminasiPage.tsx) | 11 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 11 | 0 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/PerkalianPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/PerkalianPage.tsx) | 10 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 10 | 0 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PerkalianBentukDesimalPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PerkalianBentukDesimalPage.tsx) | 10 | 0 | 0 | 0 | 22 | 0 | 0 | 0 | 4 | 6 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut/JumlahSudutSegiBanyakPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut/JumlahSudutSegiBanyakPage.tsx) | 10 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 10 | 0 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/PerbandinganSenilaiPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/PerbandinganSenilaiPage.tsx) | 9 | 0 | 0 | 0 | 0 | 6 | 0 | 0 | 9 | 0 |
 
 ### Rekonsiliasi sebelum dan sesudah perbaikan parser
 
 | Tahap | Mismatch numeric | Hilang setelah diagnosis | Baru terungkap |
 | --- | ---: | ---: | ---: |
-| Sebelum penyesuaian parser | 636 | — | — |
-| Sesudah penyesuaian parser | 621 | 22 | 7 |
+| Sebelum penyesuaian parser | 650 | — | — |
+| Sesudah penyesuaian parser | 635 | 22 | 7 |
 
 ### Jumlah ketidaksesuaian per jenis (seluruh file)
 
 | Jenis | Jumlah | Dihitung sebagai mismatch |
 | --- | ---: | --- |
-| format-saja | 273 | Tidak |
+| format-saja | 319 | Tidak |
 | adaptasi-mata-uang | 156 | Tidak |
 | adaptasi-nama-konteks | 12 | Tidak |
 | label | 3 | Tidak |
-| nilai-beda | 391 | Ya |
+| nilai-beda | 405 | Ya |
 | ambigu-pemisah | 59 | Ya |
-| **Jumlah kelas numeric sebelum pengecualian format-saja** | **621** | — |
-| **Jumlah setelah klasifikasi** | **450** | **450** |
+| **Jumlah kelas numeric sebelum pengecualian format-saja** | **635** | — |
+| **Jumlah setelah klasifikasi** | **464** | **464** |
 | (a) Key ada di id tetapi tidak ada di locale lain | 8 | Ya |
 | (b) Key ada di locale lain tetapi tidak ada di id | 1 | Ya |
 | (c) Panjang array berbeda | 1 | Ya |
@@ -71,36 +71,36 @@ Pemilihan memakai seed tetap untuk hasil yang dapat direproduksi; satu kasus dip
 
 | File | Baris | Key | Nilai id lengkap | Nilai en/ja lengkap | Code point angka id | Code point angka en/ja |
 | --- | ---: | --- | --- | --- | --- | --- |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/persamaan-garis-lurus/GrafikPGLPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/persamaan-garis-lurus/GrafikPGLPage.tsx) | 20 | `sh_titikpotong` | 📌 Menggambar Grafik Persamaan Garis dengan 2 Titik Potong Sumbu X dan Sumbu Y | 📌 x切片・y切片を使って直線を描く | 2=U+0032 | — |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/pola-bilangan/PolaKhususPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/pola-bilangan/PolaKhususPage.tsx) | 23 | `animDesc` | Pilih sebuah pola di bawah lalu perhatikan busur melengkung yang menunjukkan beda (selisih) antara dua suku yang berurutan. Busur muncul satu per satu dari kiri ke kanan — amati polanya! | 下のパターンを選択し、連続する項の差を示す曲線の弧を観察してください。弧は左から右へ1つずつ現れます — パターンを観察しましょう！ | .=U+002E, —=U+2014 | 。=U+3002, 1=U+0031, —=U+2014 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 54 | `k2_rrr` | ① Syarat RRR — Sisi-Sisi-Sisi | ① 条件SSS — 3辺相等 | —=U+2014, -=U+002D | —=U+2014, 3=U+0033 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut/HubunganDuaGarisPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut/HubunganDuaGarisPage.tsx) | 37 | `s2defTxt` | Dua garis berpotongan jika keduanya memiliki tepat satu titik persekutuan (titik potong). | 2直線がちょうど1つの共有点（交点）をもつとき、その2直線は交わるといいます。 | .=U+002E | 2=U+0032, 1=U+0031, 。=U+3002 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/persamaan-garis-lurus/GradienPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/persamaan-garis-lurus/GradienPage.tsx) | 101 | `c4_l1` | Langkah 1 — Hitung gradien QR (titik yang sudah diketahui nilai pastinya): | ステップ1 — QRの傾きを求める（値がわかっている2点）： | 1=U+0031, —=U+2014 | 1=U+0031, —=U+2014, 2=U+0032 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/lingkaran/KaitanBangunDatarLainnyaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/lingkaran/KaitanBangunDatarLainnyaPage.tsx) | 80 | `k7Title` | ✏️ Kasus 7 — Sektor Siku-Siku (¼ Lingkaran) r = 10 cm (π = 3,14) | ✏️ ケース7 — 直角扇形（1/4円）r = 10 cm（π = 3.14） | 7=U+0037, —=U+2014, -=U+002D, 1=U+0031, 0=U+0030, 3=U+0033, ,=U+002C, 4=U+0034 | 7=U+0037, —=U+2014, 1=U+0031, 4=U+0034, 0=U+0030, 3=U+0033, .=U+002E |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/garis-singgung-lingkaran/GSPDPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-singgung-lingkaran/GSPDPage.tsx) | 46 | `c1_problem` | Dua lingkaran berjari-jari 9 cm dan 6 cm, berjarak pusat 25 cm. Hitung panjang GSPD! | 半径9 cmと6 cmの2つの円の中心間距離が25 cmです。内接共通接線の長さを求めなさい！ | -=U+002D, 9=U+0039, 6=U+0036, ,=U+002C, 2=U+0032, 5=U+0035, .=U+002E | 9=U+0039, 6=U+0036, 2=U+0032, 5=U+0035, 。=U+3002 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/segitiga-segiempat/LuasSegiempatPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/segitiga-segiempat/LuasSegiempatPage.tsx) | 112 | `ex2q2` | Jika biaya pengecatan Rp 50.000 per m², berapa total biaya untuk mengecat seluruh penampang jembatan tersebut? | ペンキの費用が1 m²あたり50,000円の場合、橋の断面全体を塗るのにかかる費用はいくらですか？ | 5=U+0035, 0=U+0030, .=U+002E, ,=U+002C | 1=U+0031, 5=U+0035, 0=U+0030, ,=U+002C |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/spldv/DefinisiSPLDVPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/spldv/DefinisiSPLDVPage.tsx) | 104 | `q1Problem` | Manakah dari persamaan berikut yang merupakan PLDV? | 次の方程式のうち、2変数の一次方程式はどれ？ | — | 2=U+0032, 一=U+4E00 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/aritmetika-sosial/JualBeliUntungRugiPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/aritmetika-sosial/JualBeliUntungRugiPage.tsx) | 66 | `pctUntungEx` | Contoh: untung Rp20.000 dari modal Rp100.000 → | 例：元金$100から$20の利益 → | 2=U+0032, 0=U+0030, .=U+002E, 1=U+0031 | 1=U+0031, 0=U+0030, 2=U+0032 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/segitiga-segiempat/LuasSegitigaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/segitiga-segiempat/LuasSegitigaPage.tsx) | 95 | `s4tipText` | Setiap naik 1 tingkat satuan panjang → dikali 10. Tapi satuan luas berarti dikuadratkan → naik 1 tingkat = dikali 100. | 長さの単位が1段階上がるごとに×10。でも面積の単位は2乗なので——1段階上がると×100になります。 | 1=U+0031, 0=U+0030, .=U+002E | 1=U+0031, 0=U+0030, 。=U+3002, 2=U+0032, —=U+2014 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/PerkalianPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/PerkalianPage.tsx) | 383 | `posPosG1` | (satu buah 3) | （3 が 1 つ） | 3=U+0033 | 3=U+0033, 1=U+0031 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/aritmetika-sosial/BrutoNettoTaraPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/aritmetika-sosial/BrutoNettoTaraPage.tsx) | 132 | `quiz[].penjelasan` | Netto 1 kotak = (1 − 0,05) × 2 = 1,9 kg. Total = 10 × 1,9 = 19 kg. | Net per box = (1 − 0.05) × 2 = 1.9 kg. Total = 10 × 1.9 = 19 kg. | 1=U+0031, −=U+2212, 0=U+0030, ,=U+002C, 5=U+0035, 2=U+0032, 9=U+0039, .=U+002E | 1=U+0031, −=U+2212, 0=U+0030, .=U+002E, 5=U+0035, 2=U+0032, 9=U+0039 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-berpangkat/SifatSifatOperasiPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-berpangkat/SifatSifatOperasiPage.tsx) | 82 | `k4_tip2` | Berlaku juga untuk lebih dari dua faktor: | 3つ以上の因数にも使える： | — | 3=U+0033 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx) | 117 | `conclusionEnd` | satu sama lain, dan dari kesebangunan inilah lahir ketiga rumus perbandingan rusuk. | ができ、そこから辺の比に関する3つの公式が導かれます。 | ,=U+002C, .=U+002E | 3=U+0033, 。=U+3002 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/spldv/PenyelesaianMasalahSPLDVPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/spldv/PenyelesaianMasalahSPLDVPage.tsx) | 53 | `q1L2Var2` | = harga 1 kg jeruk ($) | = オレンジ1kgの価格（$） | 1=U+0031 | 1=U+0031 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut/SifatSudutDuaGarisSejajarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut/SifatSudutDuaGarisSejajarPage.tsx) | 102 | `s5bold3` | saling berpelurus | 補角（和が180°） | — | 1=U+0031, 8=U+0038, 0=U+0030 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/SkalaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/SkalaPage.tsx) | 58 | `c1Q` | Sebuah peta memiliki skala 1 : 2.000.000. Jarak antara Kota A dan Kota B pada peta tersebut adalah 4,5 cm. Berapa jarak sebenarnya kedua kota itu dalam kilometer? | 地図の縮尺が1：2,000,000です。地図上で都市Aと都市Bの距離は4.5cmです。実際の2都市間の距離は何kmですか？ | 1=U+0031, 2=U+0032, .=U+002E, 0=U+0030, 4=U+0034, ,=U+002C, 5=U+0035 | 1=U+0031, 2=U+0032, ,=U+002C, 0=U+0030, 。=U+3002, 4=U+0034, .=U+002E, 5=U+0035 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/plsv-ptlsv/ModelMatematikaPtLSVPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/plsv-ptlsv/ModelMatematikaPtLSVPage.tsx) | 61 | `c2s4` | Morgan harus mendapatkan nilai | Morganは4回目のテストで | — | 4=U+0034 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/BentukDesimalPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/BentukDesimalPage.tsx) | 27 | `ex1Q` | Tentukan nilai tempat angka 7 pada bilangan 3,478! | 3.478 における数字 7 の位の値を求めよ！ | 7=U+0037, 3=U+0033, ,=U+002C, 4=U+0034, 8=U+0038 | 3=U+0033, .=U+002E, 4=U+0034, 7=U+0037, 8=U+0038 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/KPKFPBPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/KPKFPBPage.tsx) | 155 | `lcmStoryAns` | Mereka akan bertemu lagi pada tanggal | 3人が次に会うのは | — | 3=U+0033 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembagianBentukDesimalPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembagianBentukDesimalPage.tsx) | 102 | `ex8find` | Jarak per liter bensin | 1リットルあたりの走行距離 | — | 1=U+0031 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan/PengertianKeanggotaanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan/PengertianKeanggotaanPage.tsx) | 33 | `introFactEnd` | pada tahun 1870-an. Ia dianggap sebagai "Bapak Teori Himpunan" modern! | in the 1870s. He is considered the "Father of Modern Set Theory"! | 1=U+0031, 8=U+0038, 7=U+0037, 0=U+0030, -=U+002D, .=U+002E | 1=U+0031, 8=U+0038, 7=U+0037, 0=U+0030, .=U+002E |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/transformasi-geometri/DilatasisPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/transformasi-geometri/DilatasisPage.tsx) | 1869 | `$value` | Dilatasi adalah satu-satunya transformasi di antara keempat jenis yang mengubah ukuran bangun. Faktor skala k menentukan segalanya: besar/kecil, arah, dan posisi bayangan. Dilatasi bukan isometri karena ukurannya berubah, tetapi bentuk tetap sama (sebangun). Kuasai rumus pusat O dan pusat P(a,b), serta ingat bahwa luas bayangan = k² × luas asal! | 拡大・縮小は、4種類の変換の中で唯一図形の大きさを変える変換です。拡大率kがすべてを決定します：大小、向き、像の位置。拡大・縮小は大きさが変わるため等長変換ではありませんが、形は変わりません（相似）。中心Oと中心P(a,b)の公式をマスターし、像の面積 = k² × 元の面積であることを忘れずに！ | -=U+002D, .=U+002E, ,=U+002C | 4=U+0034, 一=U+4E00, 。=U+3002, ,=U+002C |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/plsv-ptlsv/KalimatTerbukaTertutupPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/plsv-ptlsv/KalimatTerbukaTertutupPage.tsx) | 126 | `c3Question` | Dari kalimat-kalimat berikut, klasifikasikan masing-masing sebagai kalimat terbuka, kalimat tertutup benar, kalimat tertutup salah, atau bukan keduanya. Jika kalimat terbuka, tentukan satu nilai penyelesaiannya! | 次の各文を「開いた文」「真の閉じた文」「偽の閉じた文」「どちらでもない」に分類しなさい。開いた文なら解を1つ求めなさい！ | -=U+002D, ,=U+002C, .=U+002E | 。=U+3002, 1=U+0031 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/PerkalianPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/PerkalianPage.tsx) | 396 | `posNegG1` | (satu buah -3) | （-3 が 1 つ） | -=U+002D, 3=U+0033 | -=U+002D, 3=U+0033, 1=U+0031 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/persamaan-garis-lurus/GrafikPGLPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/persamaan-garis-lurus/GrafikPGLPage.tsx) | 243 | `c3_soal_end` | digambar pada satu bidang koordinat. Tentukan titik potong kedua garis tersebut, lalu gambarkan! | を同じ座標平面に描く。2 直線の交点を求め、グラフを描け！ | .=U+002E, ,=U+002C | 。=U+3002, 2=U+0032 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/BentukDesimalPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/BentukDesimalPage.tsx) | 11 | `sec4Notation[]` | 0,16̅ = 0,1666... (angka 6 berulang setelah 1) | 0.16̅ = 0.1666...（1 の後で数字 6 が繰り返す） | 0=U+0030, ,=U+002C, 1=U+0031, 6=U+0036, .=U+002E | 0=U+0030, .=U+002E, 1=U+0031, 6=U+0036 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/plsv-ptlsv/ModelMatematikaPtLSVPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/plsv-ptlsv/ModelMatematikaPtLSVPage.tsx) | 21 | `introBox` | Contoh situasi: "Kamu hanya punya uang Rp50.000. Kamu ingin membeli beberapa buku seharga Rp12.000 per buku. Paling banyak berapa buku yang bisa kamu beli?" → Ini adalah masalah PtLSV! | 例：「あなたは$50しか持っていません。1冊$12の本を何冊か買いたいです。最大で何冊買えますか？」→ これが一元一次不等式の問題です！ | 5=U+0035, 0=U+0030, .=U+002E, 1=U+0031, 2=U+0032 | 5=U+0035, 0=U+0030, 。=U+3002, 1=U+0031, 2=U+0032, 一=U+4E00 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/teorema-pythagoras/MasalahKontekstualPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/teorema-pythagoras/MasalahKontekstualPage.tsx) | 53 | `c3ShipPDesc` | 36 km timur, 15 km utara | 東へ36km、北へ15km | 3=U+0033, 6=U+0036, ,=U+002C, 1=U+0031, 5=U+0035 | 3=U+0033, 6=U+0036, 1=U+0031, 5=U+0035 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembulatanBentukDesimalPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembulatanBentukDesimalPage.tsx) | 45 | `ex1Q` | Bulatkan 4,638 sampai satu desimal | 4,638 を小数第1位まで四捨五入せよ | 4=U+0034, ,=U+002C, 6=U+0036, 3=U+0033, 8=U+0038 | 4=U+0034, ,=U+002C, 6=U+0036, 3=U+0033, 8=U+0038, 1=U+0031, 四=U+56DB, 五=U+4E94 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/PerbandinganUmumPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/PerbandinganUmumPage.tsx) | 114 | `c3VarSolve` | 2x = 24.000 \Rightarrow x = 12.000 | 2x = 24 \Rightarrow x = 12 | 2=U+0032, 4=U+0034, .=U+002E, 0=U+0030, 1=U+0031 | 2=U+0032, 4=U+0034, 1=U+0031 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/aritmetika-sosial/BrutoNettoTaraPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/aritmetika-sosial/BrutoNettoTaraPage.tsx) | 132 | `quiz[].penjelasan` | Netto 1 kotak = (1 − 0,05) × 2 = 1,9 kg. Total = 10 × 1,9 = 19 kg. | Net per box = (1 − 0.05) × 2 = 1.9 kg. Total = 10 × 1.9 = 19 kg. | 1=U+0031, −=U+2212, 0=U+0030, ,=U+002C, 5=U+0035, 2=U+0032, 9=U+0039, .=U+002E | 1=U+0031, −=U+2212, 0=U+0030, .=U+002E, 5=U+0035, 2=U+0032, 9=U+0039 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut/SudutPelurusPenyikuBertolakPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut/SudutPelurusPenyikuBertolakPage.tsx) | 34 | `s1bold` | daerah yang terbentuk di antara dua sinar garis yang bertemu di satu titik pangkal | 1点から出る2本の直線の間にできる領域 | — | 1=U+0031, 2=U+0032 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/SkalaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/SkalaPage.tsx) | 67 | `c3Q` | Sebuah denah lapangan olahraga menggunakan skala 1 : 1.000. Pada denah, luas lapangan tersebut adalah 12 cm². (a) Tentukan luas lapangan sebenarnya dalam m²! (b) Jika lapangan futsal di sebelahnya luasnya 800 m², berapa cm² luasnya di denah? | スポーツグラウンドの間取り図の縮尺は1：1,000です。図面上のグラウンドの面積は12cm²です。 (a) 実際のグラウンドの面積をm²で求めなさい。 (b) 隣接するフットサルコートの実際の面積が800m²のとき、図面上では何cm²ですか？ | 1=U+0031, .=U+002E, 0=U+0030, ,=U+002C, 2=U+0032, 8=U+0038 | 1=U+0031, ,=U+002C, 0=U+0030, 。=U+3002, 2=U+0032, 8=U+0038 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/garis-singgung-lingkaran/GSPLPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-singgung-lingkaran/GSPLPage.tsx) | 56 | `c1_problem` | Dua lingkaran berjari-jari 10 cm dan 4 cm. Jarak antara kedua pusatnya adalah 17 cm. Hitung panjang GSPL! | 半径10 cmと4 cmの2つの円があり、中心間の距離は17 cmです。外接共通接線の長さを求めなさい！ | -=U+002D, 1=U+0031, 0=U+0030, 4=U+0034, .=U+002E, 7=U+0037 | 1=U+0031, 0=U+0030, 4=U+0034, 2=U+0032, 7=U+0037, 。=U+3002 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/relasi-fungsi/PengertianFungsiPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/relasi-fungsi/PengertianFungsiPage.tsx) | 43 | `konsepNoteText` | Boleh saja dua anggota domain berbeda dipasangkan ke anggota kodomain yang sama. Yang tidak boleh adalah satu anggota domain punya dua keluaran berbeda! | 異なる定義域要素が同じ終域要素を指すことは問題ありません。許可されないのは、1つの定義域要素が2つの異なる出力を持つことです！ | .=U+002E | 。=U+3002, 1=U+0031, 2=U+0032 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/segitiga-segiempat/LuasSegitigaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/segitiga-segiempat/LuasSegitigaPage.tsx) | 95 | `s4tipText` | Setiap naik 1 tingkat satuan panjang → dikali 10. Tapi satuan luas berarti dikuadratkan → naik 1 tingkat = dikali 100. | Each step up in length unit → multiply by 10. But area units are squared → one step up = multiply by 100. | 1=U+0031, 0=U+0030, .=U+002E | 1=U+0031, 0=U+0030, .=U+002E |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/segitiga-segiempat/LuasSegiempatPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/segitiga-segiempat/LuasSegiempatPage.tsx) | 56 | `s1tipSqEnd` | (satu ukuran dikuadratkan) | （1つの寸法を2乗） | — | 1=U+0031, 2=U+0032 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan/PengertianKeanggotaanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan/PengertianKeanggotaanPage.tsx) | 232 | `s4e1a` | Hari dalam seminggu: Senin, Selasa, Rabu, Kamis, Jumat, Sabtu, Minggu → ada 7 hari. | 1週間の日：月、火、水、木、金、土、日 → 7日。 | ,=U+002C, 7=U+0037, .=U+002E | 1=U+0031, 7=U+0037, 。=U+3002 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/OperasiCampuranPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/OperasiCampuranPage.tsx) | 105 | `err2Title` | Kesalahan #2: Lupa Aturan Tanda Saat Mengurangi Bilangan Negatif | 間違い②：負の数を引くときの符号を忘れる | 2=U+0032 | — |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius/UnsurUnsurCartesiusPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius/UnsurUnsurCartesiusPage.tsx) | 85 | `ex2q4` | agar titik A berada tepat di titik asal O(0, 0)! | の値を求めなさい！ | 0=U+0030, ,=U+002C | — |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/teorema-pythagoras/TriplePythagorasPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/teorema-pythagoras/TriplePythagorasPage.tsx) | 15 | `subtitle` | Kelas 8 · Teorema Pythagoras · Materi Matematika | 8年生 · ピタゴラスの定理 · 数学テキスト | 8=U+0038 | 8=U+0038 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembulatanBentukDesimalPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembulatanBentukDesimalPage.tsx) | 134 | `ex8Q` | Seorang atlet berlari sejauh 10,473 km dalam latihan maraton. Untuk catatan pribadi, ia ingin membulatkan jarak tersebut ke dua desimal. Berapa jarak yang dicatat? | あるアスリートがマラソントレーニングで 10,473 km走りました。個人記録として小数第2位に四捨五入した距離を記録したい。記録される距離は？ | 1=U+0031, 0=U+0030, ,=U+002C, 4=U+0034, 7=U+0037, 3=U+0033, .=U+002E | 1=U+0031, 0=U+0030, ,=U+002C, 4=U+0034, 7=U+0037, 3=U+0033, 。=U+3002, 2=U+0032, 四=U+56DB, 五=U+4E94 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/teorema-pythagoras/MasalahKontekstualPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/teorema-pythagoras/MasalahKontekstualPage.tsx) | 65 | `astronaut` | 🚀 Tips Astronot: Para insinyur NASA menggunakan Pythagoras untuk menghitung jarak antar planet! Jika kita tahu posisi dua benda langit dalam koordinat tiga dimensi, rumus jarak tiga dimensi adalah perluasan Pythagoras: | 🚀 宇宙飛行士のヒント：NASAのエンジニアは惑星間距離の計算にピタゴラスを使います！3次元座標で2つの天体の位置がわかれば、3次元距離の公式はピタゴラスを拡張したものです： | ,=U+002C | 3=U+0033, 2=U+0032 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/pola-bilangan/PolaKhususPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/pola-bilangan/PolaKhususPage.tsx) | 52 | `ex1Ans` | ✅ Jawaban: Suku ke-12 dari barisan 1, 4, 9, 16, ... adalah 144. | ✅ 答え：数列1, 4, 9, 16, ... の第12項は144です。 | -=U+002D, 1=U+0031, 2=U+0032, ,=U+002C, 4=U+0034, 9=U+0039, 6=U+0036, .=U+002E | 1=U+0031, ,=U+002C, 4=U+0034, 9=U+0039, 6=U+0036, .=U+002E, 2=U+0032, 。=U+3002 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/pola-bilangan/PolaAritmetikaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/pola-bilangan/PolaAritmetikaPage.tsx) | 85 | `derivStep1Desc` | Misalkan S_n adalah jumlah n suku pertama. Kita tulis dua kali — maju dan mundur: | S_nを最初のn項の和とする。正順と逆順の2通りで書く： | .=U+002E, —=U+2014 | 。=U+3002, 2=U+0032 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/garis-singgung-lingkaran/SabukLilitanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-singgung-lingkaran/SabukLilitanPage.tsx) | 60 | `c2_problem` | Tiga silinder berjari-jari 14 cm disusun berjajar dan diikat sabuk keliling. Tentukan panjang sabuk minimal! (π = 22/7) | 半径14 cmの3つの円柱が一列に並びベルトで囲まれています。最小ベルト長を求めなさい！（π = 22/7） | -=U+002D, 1=U+0031, 4=U+0034, .=U+002E, 2=U+0032, 7=U+0037 | 1=U+0031, 4=U+0034, 3=U+0033, 一=U+4E00, 。=U+3002, 2=U+0032, 7=U+0037 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius/UnsurUnsurCartesiusPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius/UnsurUnsurCartesiusPage.tsx) | 83 | `ex2q2` | . Tentukan nilai | が与えられています。点Aがちょうど原点O(0, 0)にある場合、 | .=U+002E | 。=U+3002, 0=U+0030, ,=U+002C |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/bangun-ruang-sisi-datar/PrismaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bangun-ruang-sisi-datar/PrismaPage.tsx) | 1398 | `subtitle` | Kelas 8 · Bangun Ruang Sisi Datar | 中2 · 空間図形 | 8=U+0038 | 2=U+0032 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/garis-singgung-lingkaran/SabukLilitanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-singgung-lingkaran/SabukLilitanPage.tsx) | 61 | `c2_step1` | Tiga silinder bersentuhan: jarak pusat ke pusat = d = 2r = 28 cm. Ada 2 celah, jadi total segmen lurus = 4 × 28 cm. Busur total: setiap silinder di ujung = setengah lingkaran, silinder tengah = 1 lingkaran penuh. Total busur = 2 × setengah + 1 = 2 lingkaran penuh. | Three touching cylinders: center-to-center distance = d = 2r = 28 cm. 2 gaps, so total straight = 4 × 28 cm. Total arcs: end cylinders = semicircle each, middle cylinder = full circle. Total arcs = 2 full circles. | 2=U+0032, 8=U+0038, .=U+002E, ,=U+002C, 4=U+0034, 1=U+0031, +=U+002B | -=U+002D, 2=U+0032, 8=U+0038, .=U+002E, ,=U+002C, 4=U+0034 |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/pola-bilangan/PengertianPolaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/pola-bilangan/PengertianPolaPage.tsx) | 109 | `ex2Answer` | ✅ Jawaban: Suku ke-15 dari barisan 6, 12, 20, 30, … adalah 272. | ✅ 答え：数列6, 12, 20, 30, … の第15項は272です。 | -=U+002D, 1=U+0031, 5=U+0035, 6=U+0036, ,=U+002C, 2=U+0032, 0=U+0030, 3=U+0033, 7=U+0037, .=U+002E | 6=U+0036, ,=U+002C, 1=U+0031, 2=U+0032, 0=U+0030, 3=U+0033, 5=U+0035, 7=U+0037, 。=U+3002 |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/statistika/PenyajianDataPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/statistika/PenyajianDataPage.tsx) | 141 | `linePlaceholder` | Contoh: Jan | 例：1月 | — | 1=U+0031 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/pola-bilangan/PolaAritmetikaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/pola-bilangan/PolaAritmetikaPage.tsx) | 54 | `howToUseBody` | Rumus U_n = a + (n-1) \cdot b dapat digunakan untuk menentukan nilai suku manapun dalam suatu barisan aritmetika — suku ke-5, ke-20, bahkan ke-100 — tanpa perlu menghitung satu per satu, asalkan dua hal berikut diketahui: | 公式 U_n = a + (n-1) \cdot b を使えば、等差数列のどの項の値も求められます — 第5項、第20項、第100項でも、1つずつ足さずに、次の2つが分かれば： | +=U+002B, -=U+002D, 1=U+0031, —=U+2014, 5=U+0035, ,=U+002C, 2=U+0032, 0=U+0030 | +=U+002B, -=U+002D, 1=U+0031, —=U+2014, 5=U+0035, 2=U+0032, 0=U+0030 |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/bangun-ruang-sisi-lengkung/PerubahanVolumePage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bangun-ruang-sisi-lengkung/PerubahanVolumePage.tsx) | 299 | `c1b2` | • Volume ~ dimensi pangkat 3 | • Volume ~ dimension cubed | 3=U+0033 | — |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/relasi-fungsi/BanyakFungsiPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/relasi-fungsi/BanyakFungsiPage.tsx) | 88 | `koresp_visual_no` | ❌ BUKAN KORESPONDENSI 1-1 | ❌ 一対一対応ではない | 1=U+0031, -=U+002D | 一=U+4E00 |
 
 Klasifikasi numeric mismatch: token digit yang sama tetapi ditafsirkan berbeda menurut locale menjadi ambigu-pemisah; label soal/langkah/figur yang bila dihapus menyamakan angka menjadi label; pasangan Rp/$ dengan rasio nominal 1.000:1 menjadi adaptasi-mata-uang; nama orang lokal/netral yang dikenali atau classifier jumlah Jepang yang tidak dinyatakan di id menjadi adaptasi-nama-konteks. Sisa perbedaan menjadi nilai-beda. Pasangan angka sama yang hanya berbeda separator dicatat sebagai format-saja.
 
@@ -349,13 +349,27 @@ Klasifikasi numeric mismatch: token digit yang sama tetapi ditafsirkan berbeda m
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan/PengertianKeanggotaanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan/PengertianKeanggotaanPage.tsx) | 254 | `s4e3bTitle` | ja | b. Kelipatan 7 yang lebih dari 0: | b. 0より大きい7の倍数： | [7, 0] | [0, 7] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan/PengertianKeanggotaanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan/PengertianKeanggotaanPage.tsx) | 222 | `s4emptyWarnText` | ja | BUKAN himpunan kosong! Ia punya anggota: angka 0. | は空集合ではありません！要素が1つあります：数字の0。 | [0] | [1, 0] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 99 | `k3_s3_adj_angles` | en | (sudut-sudut berdekatan) | (adjacent angles supplement to 180°) | [] | [180] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 178 | `c4_q` | ja | Dua persegi kongruen masing-masing memiliki panjang sisi | 合同な2つの正方形は、それぞれ1辺の長さが | [2] | [2, 1] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 62 | `k2_ara` | ja | ③ Syarat ARA / AAR / RAA — Sudut-Sisi-Sudut / Sudut-Sudut-Sisi / Sisi-Sudut-Sudut | ③ 条件ASA / AAS / SAA — 2角夾辺 / 2角1辺 | [] | [2, 2, 1] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 51 | `k2_p1` | ja | Untuk membuktikan dua segitiga kongruen, cukup tunjukkan | 2つの三角形の合同を証明するには、次の4つの条件の | [2] | [2, 4] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 53 | `k2_p1c` | ja | dari 4 syarat berikut: | を示せば十分です： | [4] | [] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 57 | `k2_rar` | ja | ② Syarat RAR — Sisi-Sudut-Sisi | ② 条件SAS — 2辺夾角 | [] | [2] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 54 | `k2_rrr` | ja | ① Syarat RRR — Sisi-Sisi-Sisi | ① 条件SSS — 3辺相等 | [] | [3] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 99 | `k3_s3_adj_angles` | ja | (sudut-sudut berdekatan) | （隣接する角の和 = 180°） | [] | [180] |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 16 | `pageSub` | ja | Kelas 9 · Kesebangunan dan Kekongruenan · Materi Matematika | 9年生 · 合同と相似 · 数学 | [] | [9] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 99 | `k3_s3_adj_angles` | en | (sudut-sudut berdekatan) | (adjacent angles supplement to 180°) | [] | [180] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 178 | `c4_q` | ja | Dua persegi kongruen masing-masing memiliki panjang sisi | 合同な2つの正方形は、それぞれ1辺の長さが | [2] | [2, 1] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 62 | `k2_ara` | ja | ③ Syarat ARA / AAR / RAA — Sudut-Sisi-Sudut / Sudut-Sudut-Sisi / Sisi-Sudut-Sudut | ③ 条件ASA / AAS / SAA — 2角夾辺 / 2角1辺 | [] | [2, 2, 1] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 51 | `k2_p1` | ja | Untuk membuktikan dua segitiga kongruen, cukup tunjukkan | 2つの三角形の合同を証明するには、次の4つの条件の | [2] | [2, 4] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 53 | `k2_p1c` | ja | dari 4 syarat berikut: | を示せば十分です： | [4] | [] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 57 | `k2_rar` | ja | ② Syarat RAR — Sisi-Sudut-Sisi | ② 条件SAS — 2辺夾角 | [] | [2] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 54 | `k2_rrr` | ja | ① Syarat RRR — Sisi-Sisi-Sisi | ① 条件SSS — 3辺相等 | [] | [3] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx) | 99 | `k3_s3_adj_angles` | ja | (sudut-sudut berdekatan) | （隣接する角の和 = 180°） | [] | [180] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx) | 35 | `altitudeSquare` | ja | Garis tinggi kuadrat = hasil kali dua proyeksi pada sisi miring | 高さの2乗 = 斜辺上の2つの射影の積 | [2] | [2, 2] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx) | 117 | `conclusionEnd` | ja | satu sama lain, dan dari kesebangunan inilah lahir ketiga rumus perbandingan rusuk. | ができ、そこから辺の比に関する3つの公式が導かれます。 | [1] | [3] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx) | 23 | `similarTriangles` | ja | △ABD ~ △CAD ~ △CAB (semuanya saling sebangun!) | △ABD ~ △CAD ~ △CAB（3つの三角形は互いに相似） | [] | [3] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx) | 35 | `altitudeSquare` | ja | Garis tinggi kuadrat = hasil kali dua proyeksi pada sisi miring | 高さの2乗 = 斜辺上の2つの射影の積 | [2] | [2, 2] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx) | 117 | `conclusionEnd` | ja | satu sama lain, dan dari kesebangunan inilah lahir ketiga rumus perbandingan rusuk. | ができ、そこから辺の比に関する3つの公式が導かれます。 | [1] | [3] |
+| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx) | 23 | `similarTriangles` | ja | △ABD ~ △CAD ~ △CAB (semuanya saling sebangun!) | △ABD ~ △CAD ~ △CAB（3つの三角形は互いに相似） | [] | [3] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius/PosisiRelatifGarisPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius/PosisiRelatifGarisPage.tsx) | 90 | `ex3ans` | ja | ✅ A dan B berada di sisi yang | ✅ A と B は直線 3x + 2y − 6 = 0 に対して | [] | [6, 0] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius/PosisiRelatifGarisPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius/PosisiRelatifGarisPage.tsx) | 92 | `ex3ansSuffix` | ja | terhadap garis 3x + 2y − 6 = 0 | にあります | [6, 0] | [] |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius/PosisiRelatifTitikAcuanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius/PosisiRelatifTitikAcuanPage.tsx) | 60 | `ex1dirR` | ja | B berada 4 satuan di | Bは | [4] | [] |
@@ -608,6 +622,16 @@ Nilai dipendekkan bila terlalu panjang. Hanya kelas nilai-beda dan ambigu-pemisa
 | `ex6s1desc` | 31\underline{9},837 - Satuan = 9, Persepuluhan = 8 | 31\underline{9},837 — ones digit = 9, tenths digit = 8 | d — ambigu-pemisah (id vs en) | token/pemisah angka sama; tafsir locale berbeda: id=[319.837, 9, 8], en=[319837, 9, 8] |
 | `ex8Q` | Seorang atlet berlari sejauh 10,473 km dalam latihan maraton. Untuk catatan pribadi, ia ingin membulatkan jarak tersebut ke dua desimal. Berapa jarak yang dicatat? | An athlete ran 10,473 km in marathon training. For personal records, they want to round the distance to two decimal places. What distance is recorded? | d — ambigu-pemisah (id vs en) | token/pemisah angka sama; tafsir locale berbeda: id=[10.473], en=[10473] |
 
+#### [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx)
+
+| Key | Nilai id | Nilai en | Jenis | Pemeriksaan angka |
+| --- | --- | --- | --- | --- |
+| `k3_s3_adj_angles` | (sudut-sudut berdekatan) | (adjacent angles supplement to 180°) | d — nilai-beda (id vs en) | angka digit hanya ditemukan di en; kemungkinan angka lain ditulis dengan kata, perlu review |
+| `c4_q` | Dua persegi kongruen masing-masing memiliki panjang sisi | Two congruent squares each have a side length of | d — nilai-beda (id vs ja) | beda nilai setelah normalisasi: id=[2], ja=[2, 1] |
+| `k2_ara` | ③ Syarat ARA / AAR / RAA — Sudut-Sisi-Sudut / Sudut-Sudut-Sisi / Sisi-Sudut-Sudut | ③ Condition ASA / AAS / SAA — Angle-Side-Angle / Angle-Angle-Side / Side-Angle-Angle | d — nilai-beda (id vs ja) | angka digit hanya ditemukan di ja; kemungkinan angka lain ditulis dengan kata, perlu review |
+| `k2_p1` | Untuk membuktikan dua segitiga kongruen, cukup tunjukkan | To prove two triangles congruent, it suffices to show | d — nilai-beda (id vs ja) | beda nilai setelah normalisasi: id=[2], ja=[2, 4] |
+| `k2_p1c` | dari 4 syarat berikut: | of these 4 conditions: | d — nilai-beda (id vs ja) | angka digit hanya ditemukan di id; kemungkinan angka lain ditulis dengan kata, perlu review |
+
 #### [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembagianBentukDesimalPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-rasional/PembagianBentukDesimalPage.tsx)
 
 | Key | Nilai id | Nilai en | Jenis | Pemeriksaan angka |
@@ -618,23 +642,11 @@ Nilai dipendekkan bila terlalu panjang. Hanya kelas nilai-beda dan ambigu-pemisa
 | `ex3Q` | Hitunglah hasil pembagian 3456,78 \div 100.000 | Calculate 3456,78 \div 100.000 | d — ambigu-pemisah (id vs ja) | token/pemisah angka sama; tafsir locale berbeda: id=[3456.78, 100000], ja=[3456.78, 100] |
 | `ex3s2desc` | Kita perlu menambah 1 angka nol di depan: 03456,78 | We need to add 1 zero at the front: 03456,78 | d — nilai-beda (id vs ja) | beda nilai setelah normalisasi: id=[1, 3456.78], ja=[0, 1, 3456.78] |
 
-#### [`../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/SkalaPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/perbandingan/SkalaPage.tsx)
-
-| Key | Nilai id | Nilai en | Jenis | Pemeriksaan angka |
-| --- | --- | --- | --- | --- |
-| `c1Q` | Sebuah peta memiliki skala 1 : 2.000.000. Jarak antara Kota A dan Kota B pada peta tersebut adalah 4,5 cm. Berapa jarak sebenarnya kedua kota itu dalam kilometer? | A map has a scale of 1 : 2,000,000. The distance between City A and City B on the map is 4.5 cm. What is the actual distance between the two cities in kilometres? | d — nilai-beda (id vs ja) | beda nilai setelah normalisasi: id=[1, 2000000, 4.5, 2], ja=[1, 2000000, 4, 2] |
-| `c1Result` | Jarak sebenarnya Kota A ke Kota B = 90 km | Actual distance from City A to City B = 90 km | d — nilai-beda (id vs ja) | angka digit hanya ditemukan di id; kemungkinan angka lain ditulis dengan kata, perlu review |
-| `c2Q` | Jarak antara dua desa adalah 15 km. Pada sebuah denah wilayah, jarak keduanya digambar sepanjang 3 cm. (a) Tentukan skala denah tersebut! (b) Jika ada desa ketiga yang jaraknya 24… | The distance between two villages is 15 km. On a regional map, this distance is drawn as 3 cm. (a) Find the scale of the map! (b) If a third village is 24 km from the first, how m… | d — nilai-beda (id vs ja) | beda nilai setelah normalisasi: id=[15, 3, 24], ja=[2, 3, 1] |
-| `c2ResultB` | Jarak di denah = 4,8 cm | Map distance = 4.8 cm | d — nilai-beda (id vs ja) | beda nilai setelah normalisasi: id=[4.8], ja=[4] |
-| `c2UbahA` | 15 km = 15 × 100.000 cm = 1.500.000 cm | 15 km = 15 × 100,000 cm = 1,500,000 cm | d — nilai-beda (id vs ja) | beda nilai setelah normalisasi: id=[15, 15, 100000, 1500000], ja=[15, 100, 1500] |
-
 ### File tanpa terjemahan yang terdeteksi
 
 | File | Klasifikasi |
 | --- | --- |
 | [`../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/BukuAnimasiPenjumlahanPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/bilangan-bulat/BukuAnimasiPenjumlahanPage.tsx) | halaman konten |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/DefinisiPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/DefinisiPage.tsx) | halaman konten |
-| [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx) | halaman konten |
 
 ## Cakupan per topik
 
@@ -652,7 +664,7 @@ Nilai dipendekkan bila terlalu panjang. Hanya kelas nilai-beda dan ambigu-pemisa
 | [`garis-dan-sudut`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-dan-sudut) | 4 | 4 | 0 | — |
 | [`garis-singgung-lingkaran`](../artifacts/numatik/src/pages/buku-animasi-matematika/garis-singgung-lingkaran) | 5 | 5 | 4 | — |
 | [`himpunan`](../artifacts/numatik/src/pages/buku-animasi-matematika/himpunan) | 5 | 5 | 0 | — |
-| [`kesebangunan-kekongruenan`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan) | 5 | 3 | 2 | `DefinisiPage.tsx`, `PerbandinganRusukSikuSikuPage.tsx` |
+| [`kesebangunan-kekongruenan`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan) | 5 | 5 | 5 | — |
 | [`koordinat-cartesius`](../artifacts/numatik/src/pages/buku-animasi-matematika/koordinat-cartesius) | 5 | 5 | 4 | — |
 | [`lingkaran`](../artifacts/numatik/src/pages/buku-animasi-matematika/lingkaran) | 7 | 7 | 7 | — |
 | [`peluang`](../artifacts/numatik/src/pages/buku-animasi-matematika/peluang) | 6 | 5 | 0 | — |
@@ -1778,18 +1790,39 @@ Bahasa: id, en, ja
 
 ## Topik kesebangunan-kekongruenan
 
+### [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/DefinisiPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/DefinisiPage.tsx)
+
+#### Peta 1: `object@1237` (baris 1237)
+Bahasa: id, en, ms-MY, ja, zh-CN, ru
+- Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
+
+#### Peta 2: `locale constants@1` (baris 19)
+Bahasa: id, en, ja, ru
+- Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
+
 ### [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/KekongruenBangunDatarPage.tsx)
 
-#### Peta 1: `translations` (baris 13)
-Bahasa: id, en, ja
+#### Peta 1: `object@1263` (baris 1263)
+Bahasa: id, en, ms-MY, ja, zh-CN, ru
 - **Angka berbeda pada `k3_s3_adj_angles` (id vs en; nilai-beda):** id=[], en=[180]
+- **Angka berbeda pada `c4_q` (id vs ja; nilai-beda):** id=[2], ja=[2, 1]
 - **Angka berbeda pada `k2_ara` (id vs ja; nilai-beda):** id=[], ja=[2, 2, 1]
 - **Angka berbeda pada `k2_p1` (id vs ja; nilai-beda):** id=[2], ja=[2, 4]
 - **Angka berbeda pada `k2_p1c` (id vs ja; nilai-beda):** id=[4], ja=[]
 - **Angka berbeda pada `k2_rar` (id vs ja; nilai-beda):** id=[], ja=[2]
 - **Angka berbeda pada `k2_rrr` (id vs ja; nilai-beda):** id=[], ja=[3]
 - **Angka berbeda pada `k3_s3_adj_angles` (id vs ja; nilai-beda):** id=[], ja=[180]
-- **Angka berbeda pada `pageSub` (id vs ja; nilai-beda):** id=[], ja=[9]
+
+#### Peta 2: `locale constants@1` (baris 14)
+Bahasa: id, en, ja, ru
+- **Angka berbeda pada `k3_s3_adj_angles` (id vs en; nilai-beda):** id=[], en=[180]
+- **Angka berbeda pada `c4_q` (id vs ja; nilai-beda):** id=[2], ja=[2, 1]
+- **Angka berbeda pada `k2_ara` (id vs ja; nilai-beda):** id=[], ja=[2, 2, 1]
+- **Angka berbeda pada `k2_p1` (id vs ja; nilai-beda):** id=[2], ja=[2, 4]
+- **Angka berbeda pada `k2_p1c` (id vs ja; nilai-beda):** id=[4], ja=[]
+- **Angka berbeda pada `k2_rar` (id vs ja; nilai-beda):** id=[], ja=[2]
+- **Angka berbeda pada `k2_rrr` (id vs ja; nilai-beda):** id=[], ja=[3]
+- **Angka berbeda pada `k3_s3_adj_angles` (id vs ja; nilai-beda):** id=[], ja=[180]
 
 ### [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/MenghitungRusukPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/MenghitungRusukPage.tsx)
 
@@ -1804,6 +1837,20 @@ Bahasa: id, en, ms-MY, ja, zh-CN, ru
 #### Peta 3: `locale constants@1` (baris 12)
 Bahasa: id, en, ja, ru
 - Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.
+
+### [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/PerbandinganRusukSikuSikuPage.tsx)
+
+#### Peta 1: `object@255` (baris 255)
+Bahasa: id, en, ms-MY, ja, zh-CN, ru
+- **Angka berbeda pada `altitudeSquare` (id vs ja; nilai-beda):** id=[2], ja=[2, 2]
+- **Angka berbeda pada `conclusionEnd` (id vs ja; nilai-beda):** id=[1], ja=[3]
+- **Angka berbeda pada `similarTriangles` (id vs ja; nilai-beda):** id=[], ja=[3]
+
+#### Peta 2: `locale constants@1` (baris 11)
+Bahasa: id, en, ja, ru
+- **Angka berbeda pada `altitudeSquare` (id vs ja; nilai-beda):** id=[2], ja=[2, 2]
+- **Angka berbeda pada `conclusionEnd` (id vs ja; nilai-beda):** id=[1], ja=[3]
+- **Angka berbeda pada `similarTriangles` (id vs ja; nilai-beda):** id=[], ja=[3]
 
 ### [`../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/SegitigaSebangunPage.tsx`](../artifacts/numatik/src/pages/buku-animasi-matematika/kesebangunan-kekongruenan/SegitigaSebangunPage.tsx)
 

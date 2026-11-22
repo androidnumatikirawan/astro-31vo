@@ -4,14 +4,14 @@ import Starfield from "@/components/Starfield";
 import PageNavigation from "@/components/PageNavigation";
 import { BookOpen, ChevronDown, ChevronUp, Lightbulb, Calculator, Target, Shapes } from "lucide-react";
 import { playPopSound } from "@/hooks/useAudio";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type Language } from "@/contexts/LanguageContext";
+import { pickLang } from "@/lib/pickLang";
 import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
 import { DragCongruenceDemo } from "@/components/CongruenceDragDemo";
 
 // ─── Translations ─────────────────────────────────────────────────────────────
-const translations = {
-  id: {
+const id = {
     pageTitle: "KEKONGRUENAN BANGUN DATAR",
     pageSub: "Kelas 9 · Kesebangunan dan Kekongruenan · Materi Matematika",
     sec_intro: "🧱 Apa Itu Kekongruenan?",
@@ -174,6 +174,13 @@ const translations = {
     c3_discuss_intro: "Karena", c3_discuss_introb: ", sisi-sisi bersesuaian adalah:",
     c3_el1: "Sisi AC bersesuaian dengan sisi PR",
     c3_answer: "Jawaban: D. 7 ✓",
+    c4_title: "Contoh 4 — Keliling Persegi Kongruen",
+    c4_q: "Dua persegi kongruen masing-masing memiliki panjang sisi",
+    c4_q2: "Berapakah keliling setiap persegi?",
+    c4_math: "1.234{,}5",
+    c4_result: "4\\times1.234{,}5=4.938{,}0\\,\\mathrm{cm}",
+    c4_solution: "Keliling persegi = 4 × sisi =",
+    c4_answer: "Jawaban:",
     rang_title: "📋 Rangkuman — Kekongruenan Bangun Datar",
     rang_h1: "Bangun", rang_h2: "Syarat Kongruen", rang_h3: "Jumlah Syarat Min.",
     rang_r1n: "Segitiga", rang_r1v: "RRR, RAR, ARA, atau AAR (salah satu)", rang_r1e: "3 unsur",
@@ -210,8 +217,10 @@ const translations = {
     conc_l4: "🔹 Kongruen adalah kasus khusus sebangun:",
     conc_note: "Kekongruenan adalah fondasi pembuktian geometri — digunakan untuk membuktikan garis sejajar, persamaan sudut, dan sifat-sifat bangun ruang.",
     back: "← Kembali ke Kesebangunan dan Kekongruenan",
-  },
-  en: {
+};
+type T = typeof id;
+
+const en: T = {
     pageTitle: "CONGRUENCE OF PLANE FIGURES",
     pageSub: "Grade 9 · Congruence & Similarity · Mathematics",
     sec_intro: "🧱 What Is Congruence?",
@@ -374,6 +383,13 @@ const translations = {
     c3_discuss_intro: "Since", c3_discuss_introb: ", the corresponding sides are:",
     c3_el1: "Side AC corresponds to side PR",
     c3_answer: "Answer: D. 7 ✓",
+    c4_title: "Example 4 — Perimeter of a Congruent Square",
+    c4_q: "Two congruent squares each have a side length of",
+    c4_q2: "What is the perimeter of each square?",
+    c4_math: "1{,}234.5",
+    c4_result: "4\\times1{,}234.5=4{,}938.0\\,\\mathrm{cm}",
+    c4_solution: "Square perimeter = 4 × side =",
+    c4_answer: "Answer:",
     rang_title: "📋 Summary — Congruence of Plane Figures",
     rang_h1: "Figure", rang_h2: "Congruence Condition", rang_h3: "Min. No. of Conditions",
     rang_r1n: "Triangle", rang_r1v: "SSS, SAS, ASA, or AAS (any one)", rang_r1e: "3 elements",
@@ -410,10 +426,11 @@ const translations = {
     conc_l4: "🔹 Congruence is a special case of similarity:",
     conc_note: "Congruence is the foundation of geometric proof — used to prove parallel lines, equal angles, and properties of 3D shapes.",
     back: "← Back to Congruence and Similarity",
-  },
-  ja: {
+};
+
+const ja: T = {
     pageTitle: "平面図形の合同",
-    pageSub: "9年生 · 合同と相似 · 数学",
+    pageSub: "中学3年 · 合同と相似 · 数学",
     sec_intro: "🧱 合同とは？",
     sec_konsep1: "📘 第1節 — 合同な2つの三角形の性質",
     sec_konsep2: "📘 第2節 — 2つの三角形が合同な条件",
@@ -574,6 +591,13 @@ const translations = {
     c3_discuss_intro: "より", c3_discuss_introb: "、対応する辺は：",
     c3_el1: "辺ACは辺PRに対応する",
     c3_answer: "答え：D. 7 ✓",
+    c4_title: "例4 — 合同な正方形の周の長さ",
+    c4_q: "合同な2つの正方形は、それぞれ1辺の長さが",
+    c4_q2: "それぞれの正方形の周の長さはいくつですか？",
+    c4_math: "1{,}234.5",
+    c4_result: "4\\times1{,}234.5=4{,}938.0\\,\\mathrm{cm}",
+    c4_solution: "正方形の周の長さ = 4 × 辺の長さ =",
+    c4_answer: "答え：",
     rang_title: "📋 まとめ — 平面図形の合同",
     rang_h1: "図形", rang_h2: "合同条件", rang_h3: "最小条件数",
     rang_r1n: "三角形", rang_r1v: "SSS, SAS, ASA, またはAAS（いずれか）", rang_r1e: "3要素",
@@ -610,9 +634,640 @@ const translations = {
     conc_l4: "🔹 合同は相似の特殊なケース：",
     conc_note: "合同は幾何学的証明の基礎 — 平行線、等角、立体図形の性質を証明するのに使われます。",
     back: "← 合同と相似に戻る",
-  },
 };
-type TKey = typeof translations.id;
+
+const msMY: T = {
+  pageTitle: "KEKONGRUENAN BENTUK SATAH",
+  pageSub: "Tingkatan 3 · Kesebangunan dan Kekongruenan · Matematik",
+  sec_intro: "🧱 Apakah Kekongruenan?",
+  sec_konsep1: "📘 Subtopik 1 — Sifat Dua Segi Tiga Kongruen",
+  sec_konsep2: "📘 Subtopik 2 — Syarat Dua Segi Tiga Kongruen",
+  sec_bangunLain: "📘 Subtopik 3 — Kekongruenan Bentuk Satah Lain",
+  sec_contoh: "📝 Contoh Soalan — Kekongruenan Segi Tiga dan Bentuk Lain",
+  intro_p1: "Dua bentuk satah dikatakan",
+  intro_k1: "kongruen",
+  intro_p1b: "jika satu bentuk boleh diletakkan",
+  intro_em: "tepat",
+  intro_p1c: "di atas bentuk yang lain — seperti dua kepingan teka-teki serupa yang bertindih tanpa ruang. Kekongruenan meliputi",
+  intro_k2: "semua jenis bentuk satah",
+  intro_p1d: ", bukan segi tiga sahaja!",
+  intro_formal: "📌 Takrif Formal",
+  intro_f1: "Dua bentuk satah",
+  intro_f2: "dan",
+  intro_f3: "dikatakan kongruen",
+  intro_f3b: "jika dan hanya jika:",
+  intro_c1: "① Semua sisi sepadan",
+  intro_c1b: "sama panjang",
+  intro_c2: "② Semua sudut sepadan",
+  intro_c2b: "sama besar",
+  intro_note: "Bentuk kongruen boleh diterbalikkan (pantulan) atau diputarkan supaya bertindih.",
+  k1_summary: "🎯 Ringkasan Utama",
+  k1_p1: "Jika",
+  k1_p1b: ", maka dua sifat berikut berlaku serentak:",
+  k1_rusuk: "① Sisi sepadan sama panjang:",
+  k1_sudut: "② Sudut sepadan sama besar:",
+  k1_diag_label: "🔍 ILUSTRASI SIFAT KEKONGRUENAN SEGI TIGA:",
+  fig1: "Rajah 1. Ilustrasi △ABC ≅ △PQR — semua sisi sepadan dan semua sudut sepadan sama",
+  k1_warn: "Perhatikan tertib bucu!",
+  k1_warn2: "bermaksud A↔P, B↔Q, C↔R. Maka",
+  k1_warn3: "(bukan",
+  k1_warn3b: "!)",
+  k2_summary: "🎯 Ringkasan Utama",
+  k2_p1: "Untuk membuktikan dua segi tiga kongruen, cukup tunjukkan",
+  k2_p1b: "salah satu",
+  k2_p1c: "daripada 4 syarat berikut:",
+  k2_rrr: "① Syarat SSS — Sisi-Sisi-Sisi",
+  fig2: "Rajah 2. Syarat SSS — ketiga-tiga pasangan sisi sepadan sama panjang: AB=PQ, BC=QR, CA=RP",
+  k2_rrr_p: "Ketiga-tiga pasangan sisi sepadan sama panjang.",
+  k2_rar: "② Syarat SAS — Sisi-Sudut-Sisi",
+  fig3: "Rajah 3. Syarat SAS — dua sisi sepadan dan sudut terkepung sama: AB=PQ, ∠A=∠P, AC=PR",
+  k2_rar_p: "Dua sisi sepadan sama panjang",
+  k2_rar_pb: "dan sudut terkepungnya",
+  k2_rar_pc: "sama besar.",
+  k2_ara: "③ Syarat ASA / AAS / SAA — Sudut-Sisi-Sudut / Sudut-Sudut-Sisi / Sisi-Sudut-Sudut",
+  fig4: "Rajah 4. Syarat ASA/AAS/SAA — satu sisi dan dua sudut sepadan sama: ∠A=∠P, AB=PQ, ∠B=∠Q",
+  k2_ara_p: "Satu sisi sepadan dan dua sudut sepadan sama (sisi boleh di antara atau bertentangan dengan sudut).",
+  tbl2_title: "📊 RINGKASAN SYARAT KEKONGRUENAN SEGI TIGA:",
+  tbl2_h1: "Kod", tbl2_h2: "Syarat", tbl2_h3: "Unsur Diperlukan",
+  tbl2_code_rrr: "SSS", tbl2_code_rar: "SAS", tbl2_code_ara: "ASA", tbl2_code_aar: "AAS/SAA",
+  tbl2_rrr_s: "3 pasangan sisi sama", tbl2_rrr_e: "3 sisi",
+  tbl2_rar_s: "2 sisi + sudut terkepung sama", tbl2_rar_e: "2 sisi + 1 sudut",
+  tbl2_ara_s: "1 sisi diapit + 2 sudut sama", tbl2_ara_e: "1 sisi + 2 sudut",
+  tbl2_aar_s: "1 sisi bertentangan + 2 sudut sama", tbl2_aar_e: "1 sisi + 2 sudut",
+  k3_intro: "Kekongruenan bukan hanya untuk segi tiga. Semua bentuk satah — segi empat sama, segi empat tepat, segi empat selari, trapezium, rombus, layang-layang, bulatan dan poligon lain — boleh kongruen. Syarat umumnya tetap sama:",
+  k3_intro_k: "semua sisi sepadan sama panjang DAN semua sudut sepadan sama besar.",
+  k3_s1: "① Segi Empat Sama",
+  fig5: "Rajah 5. Dua segi empat sama kongruen — ABCD ≅ PQRS jika sisinya sama panjang (AB=PQ)",
+  k3_s1_cond_title: "Syarat kekongruenan segi empat sama:",
+  k3_s1_cond: "Dua segi empat sama kongruen jika dan hanya jika",
+  k3_s1_cond_k: "panjang sisinya sama",
+  k3_s1_squareName: "Segi Empat Sama",
+  k3_s1_note: "Semua sudut segi empat sama ialah 90°, jadi hanya satu syarat sisi diperlukan!",
+  k3_s1_prop_title: "Sifat bentuk kongruen:",
+  k3_s2: "② Segi Empat Tepat",
+  fig6: "Rajah 6. Dua segi empat tepat kongruen — ABCD ≅ PQRS jika panjang dan lebar sama (AB=PQ dan BC=QR)",
+  k3_s2_cond_title: "Syarat kekongruenan segi empat tepat:",
+  k3_s2_cond: "Dua segi empat tepat kongruen jika",
+  k3_s2_cond_k: "panjang (", k3_s2_cond_kb: ") dan lebarnya (", k3_s2_cond_kc: ") sama",
+  k3_s2_note: "Semua sudutnya 90°, jadi hanya 2 pasangan sisi sepadan perlu sama.",
+  k3_s2_ex_title: "Contoh ringkas:",
+  k3_s2_ex1: "Segi empat tepat 6 cm × 4 cm", k3_s2_ex1b: "segi empat tepat 6 cm × 4 cm ✓",
+  k3_s2_ex2: "Segi empat tepat 6 cm × 4 cm", k3_s2_ex2b: "segi empat tepat 4 cm × 6 cm ✗",
+  k3_s2_ex2c: "(semak pasangan sisi sepadan!)",
+  k3_s3: "③ Segi Empat Selari",
+  fig7: "Rajah 7. Dua segi empat selari kongruen jika dua sisi sepadan dan sudut terkepung sama",
+  k3_s3_cond_title: "Syarat kekongruenan segi empat selari:",
+  k3_s3_cond: "Dua segi empat selari kongruen jika",
+  k3_s3_cond_k: "dua sisi sepadan sama panjang DAN sudut terkepung sama besar",
+  k3_s3_note: "⚠️ Sisi yang sama sahaja tidak menjamin kekongruenan jika sudut berbeza!",
+  k3_s3_prop_title: "Sifat tambahan:",
+  k3_s3_and: "dan", k3_s3_opp_angles: "(sudut bertentangan)", k3_s3_adj_angles: "(sudut bersebelahan)",
+  k3_s4: "④ Trapezium",
+  fig8: "Rajah 8. Dua trapezium kongruen jika semua sisi dan sudut sepadan sama",
+  k3_s4_cond_title: "Syarat kekongruenan trapezium:",
+  k3_s4_cond: "Dua trapezium kongruen jika",
+  k3_s4_cond_k: "semua sisi sepadan DAN semua sudut sepadan sama",
+  k3_s4_iso_title: "Trapezium Sama Kaki:",
+  k3_s4_iso_p: "Dalam trapezium sama kaki kongruen, kaki sepadan sama panjang dan sudut tapak sama besar.",
+  k3_s4_legs: "(kaki sama panjang)",
+  k3_s5: "⑤ Rombus",
+  fig9: "Rajah 9. Dua rombus kongruen jika sisi dan satu sudut terkepung sama (AB=PQ dan ∠A=∠P)",
+  k3_s5_cond_title: "Syarat kekongruenan rombus:",
+  k3_s5_cond: "Dua rombus kongruen jika",
+  k3_s5_cond_k: "panjang sisi sama DAN satu sudut terkepung sama",
+  k3_s5_note: "⚠️ Rombus dengan sisi sama belum tentu kongruen — sudut terkepung juga mesti sama!",
+  k3_s5_prop_title: "Sifat tambahan:",
+  k3_s5_p1: "✅", k3_s5_p2: "(semua sisi sama)", k3_s5_p3: "dan",
+  k3_s5_p4: "(sudut bertentangan sama)",
+  k3_s5_p5: "✅ Pepenjuru bersilang tegak lurus dan saling membahagi dua",
+  k3_s6: "⑥ Layang-layang",
+  fig10: "Rajah 10. Dua layang-layang kongruen jika semua sisi dan sudut sepadan sama",
+  k3_s6_cond_title: "Syarat kekongruenan layang-layang:",
+  k3_s6_cond: "Dua layang-layang kongruen jika",
+  k3_s6_cond_k: "semua sisi sepadan DAN semua sudut sepadan sama",
+  k3_s6_ang_note: "(sudut antara sisi yang berlainan panjang)",
+  k3_s6_prop_title: "Sifat layang-layang:",
+  k3_s6_p1: "✅", k3_s6_p1b: "dan", k3_s6_p1c: "(dua pasangan sisi bersebelahan sama)",
+  k3_s6_p2: "✅", k3_s6_p2b: "(sudut antara sisi berlainan panjang sama)",
+  k3_s6_p3: "✅ Pepenjuru utama (AC) membahagi dua BD secara tegak lurus",
+  k3_s7: "⑦ Bulatan",
+  fig11: "Rajah 11. Dua bulatan kongruen jika jejari sama panjang (r₁=r₂)",
+  k3_s7_cond_title: "Syarat kekongruenan bulatan:",
+  k3_s7_cond: "Dua bulatan kongruen jika dan hanya jika",
+  k3_s7_cond_k: "jejari sama panjang",
+  k3_s7_circle1: "Bulatan₁", k3_s7_circle2: "Bulatan₂",
+  k3_s7_note: "Bulatan tiada sudut, jadi hanya satu syarat diperlukan: jejari sama!",
+  k3_s7_prop_title: "Kesannya:",
+  k3_s7_p1: "✅ Lilitan sama:", k3_s7_p2: "✅ Luas sama:",
+  tbl3_title: "📊 RINGKASAN SYARAT KEKONGRUENAN BENTUK SATAH:",
+  tbl3_h1: "Bentuk", tbl3_h2: "Syarat Kongruen",
+  tbl3_r1n: "Segi tiga", tbl3_r1v: "SSS / SAS / ASA / AAS (salah satu)",
+  tbl3_r2n: "Segi empat sama", tbl3_r2v: "Sisi sama panjang (1 syarat)",
+  tbl3_r3n: "Segi empat tepat", tbl3_r3v: "Panjang dan lebar sepadan sama",
+  tbl3_r4n: "Segi empat selari", tbl3_r4v: "2 sisi sepadan + sudut terkepung sama",
+  tbl3_r5n: "Trapezium", tbl3_r5v: "Semua sisi + sudut sepadan sama",
+  tbl3_r6n: "Bulatan", tbl3_r6v: "Jejari sama (1 syarat)",
+  tbl3_r7n: "Poligon-n", tbl3_r7v: "Semua n sisi + n sudut sepadan sama",
+  badge_mudah: "MUDAH", badge_sedang: "SEDERHANA",
+  c1_title: "Contoh 1 — Segi Tiga Kongruen",
+  c1_q: "Perhatikan rajah berikut.",
+  fig12: "Rajah 12. Titik P, T, U, S, R, Q — tentukan bilangan segi tiga kongruen",
+  c1_q2: "Bilangan segi tiga kongruen dalam rajah ialah . . . .",
+  c1_discuss_title: "PENYELESAIAN:",
+  c1_discuss_intro: "Kenal pasti segi tiga yang terbentuk:",
+  c1_t1: "bersudut tegak di T", c1_t2: "bersudut tegak di S", c1_t3: "terbentuk daripada T, U, S",
+  c1_discuss_p: "Ketiga-tiga segi tiga itu kongruen kerana memenuhi syarat kekongruenan.",
+  c1_answer: "Jawapan: D. 3 segi tiga ✓",
+  c2_title: "Contoh 2 — Aksiom Kekongruenan",
+  c2_q: "Diberi", c2_q2: "mengikut aksiom yang mana? . . . .",
+  fig13: "Rajah 13. △CDA dan △CBE dengan BC=CD dan ∠CDA=∠CBE=90°",
+  c2_opt_a: "A. sisi, sisi, sisi", c2_opt_b: "B. sisi, sisi, sudut",
+  c2_opt_c: "C. sisi, sudut, sisi", c2_opt_d: "D. sudut, sisi, sudut",
+  c2_discuss_title: "PENYELESAIAN:",
+  c2_discuss_intro: "Semak unsur sepadan bagi",
+  c2_discuss_introb: "dan",
+  c2_el1: "(sudut C sama kerana A, B, C segaris)",
+  c2_el2: "(diberi", c2_el2b: ") ← sisi terkepung",
+  c2_el3: "(sudut tegak)",
+  c2_discuss_p: "Dua sudut + sisi di antaranya sama → aksiom",
+  c2_discuss_pb: "Sudut–Sisi–Sudut (ASA)",
+  c2_answer: "Jawapan: D. sudut, sisi, sudut ✓",
+  c3_title: "Contoh 3 — Mencari Nilai m",
+  c3_q: "Jika", c3_q2: ", cari nilai", c3_q3: ". . . .",
+  fig14: "Rajah 14. △ABC ≅ △PQR — AC=(12−m) sepadan dengan PR=5; cari m",
+  c3_discuss_title: "PENYELESAIAN:",
+  c3_discuss_intro: "Oleh sebab", c3_discuss_introb: ", sisi sepadan ialah:",
+  c3_el1: "Sisi AC sepadan dengan sisi PR",
+  c3_answer: "Jawapan: D. 7 ✓",
+  c4_title: "Contoh 4 — Perimeter Segi Empat Sama Kongruen",
+  c4_q: "Dua segi empat sama kongruen masing-masing mempunyai panjang sisi",
+  c4_q2: "Berapakah perimeter setiap segi empat sama?",
+  c4_math: "1{,}234.5",
+  c4_result: "4\\times1{,}234.5=4{,}938.0\\,\\mathrm{cm}",
+  c4_solution: "Perimeter segi empat sama = 4 × sisi =",
+  c4_answer: "Jawapan:",
+  rang_title: "📋 Rumusan — Kekongruenan Bentuk Satah",
+  rang_h1: "Bentuk", rang_h2: "Syarat Kongruen", rang_h3: "Bil. Syarat Minimum",
+  rang_r1n: "Segi tiga", rang_r1v: "SSS, SAS, ASA atau AAS (salah satu)", rang_r1e: "3 unsur",
+  rang_r2n: "Segi empat sama", rang_r2v: "Panjang sisi sama", rang_r2e: "1 unsur",
+  rang_r3n: "Segi empat tepat", rang_r3v: "Panjang dan lebar sepadan sama", rang_r3e: "2 unsur",
+  rang_r4n: "Segi empat selari", rang_r4v: "2 sisi sepadan + sudut terkepung sama", rang_r4e: "3 unsur",
+  rang_r5n: "Trapezium & poligon", rang_r5v: "Semua sisi dan sudut sepadan sama", rang_r5e: "Semua unsur",
+  rang_r6n: "Bulatan", rang_r6v: "Jejari sama panjang", rang_r6e: "1 unsur",
+  rang_note1: "Takrif:",
+  rang_note1b: "Dua bentuk kongruen (≅) jika semua sisi sepadan sama panjang DAN semua sudut sepadan sama besar",
+  rang_note2: "Notasi penting:",
+  rang_note2b: "bermaksud A↔P, B↔Q, C↔R. Tertib huruf menentukan pasangan!",
+  rang_note3: "Bentuk boleh diputarkan/dipantulkan:",
+  rang_note3b: "Kekongruenan kekal walaupun satu bentuk diputarkan atau dipantulkan",
+  tips_title: "💡 Petua & Trik",
+  tips_1t: "Ingat syarat kekongruenan segi tiga (SSS, SAS, ASA, AAS):",
+  tips_1b: "S = Sisi, A = Angle (Sudut). Syarat ini memastikan ketiga-tiga sisi dan sudut sama — tidak perlu menyemaknya satu demi satu!",
+  tips_2t: "Cara cepat menentukan sisi sepadan daripada notasi:",
+  tips_2b: "Jika", tips_2bb: ", padankan bucu pada kedudukan yang sama:",
+  tips_3t: "Bezakan kongruen dengan serupa dalam soalan aneka pilihan:",
+  tips_3b: "Jika faktor skala k ≠ 1 → serupa, bukan kongruen. Jika semua ukuran sama tepat → kongruen (k=1).",
+  tips_4t: "Untuk soalan \"cari nilai x\":",
+  tips_4b: "Gunakan pasangan sisi sepadan yang sama. Jika",
+  tips_4bb: ", bina persamaan terus dan selesaikan.",
+  conc_title: "✅ Kesimpulan",
+  conc_p1: "Kekongruenan bentuk satah ialah konsep",
+  conc_p1k: "\"bertindih dengan tepat\"",
+  conc_p1b: "— dua bentuk yang boleh ditindihkan tanpa ruang atau lebihan.",
+  conc_l1: "🔹 Bukan semua bentuk memerlukan semua syarat:",
+  conc_l1k: "segi empat sama dan bulatan", conc_l1b: "hanya memerlukan 1 syarat",
+  conc_l2: "🔹 Segi tiga mempunyai", conc_l2k: "4 kaedah pembuktian",
+  conc_l2b: "kekongruenan (SSS, SAS, ASA, AAS)",
+  conc_l3: "🔹 Bentuk yang diputarkan atau dipantulkan", conc_l3k: "kekal kongruen",
+  conc_l4: "🔹 Kongruen ialah kes khas bagi keserupaan:",
+  conc_note: "Kekongruenan ialah asas pembuktian geometri — digunakan untuk membuktikan garis selari, sudut sama dan sifat bentuk 3D.",
+  back: "← Kembali ke Kesebangunan dan Kekongruenan",
+};
+
+const zhCN: T = {
+  pageTitle: "平面图形的全等",
+  pageSub: "九年级 · 全等与相似 · 数学",
+  sec_intro: "🧱 什么是全等？",
+  sec_konsep1: "📘 子主题 1 — 全等三角形的性质",
+  sec_konsep2: "📘 子主题 2 — 两个三角形全等的条件",
+  sec_bangunLain: "📘 子主题 3 — 其他平面图形的全等",
+  sec_contoh: "📝 练习题 — 三角形与图形的全等",
+  intro_p1: "如果两个平面图形",
+  intro_k1: "全等",
+  intro_p1b: "，那么其中一个可以",
+  intro_em: "完全",
+  intro_p1c: "覆盖另一个，就像两块完全相同的拼图严丝合缝地重叠。全等适用于",
+  intro_k2: "所有类型的平面图形",
+  intro_p1d: "，不只是三角形！",
+  intro_formal: "📌 形式定义",
+  intro_f1: "两个平面图形",
+  intro_f2: "和",
+  intro_f3: "称为全等",
+  intro_f3b: "，当且仅当：",
+  intro_c1: "① 所有对应边",
+  intro_c1b: "长度相等",
+  intro_c2: "② 所有对应角",
+  intro_c2b: "大小相等",
+  intro_note: "全等图形可以翻转（反射）或旋转后重合。",
+  k1_summary: "🎯 要点总结",
+  k1_p1: "如果",
+  k1_p1b: "，则以下两个性质同时成立：",
+  k1_rusuk: "① 对应边相等：",
+  k1_sudut: "② 对应角相等：",
+  k1_diag_label: "🔍 三角形全等性质示意图：",
+  fig1: "图1. △ABC ≅ △PQR — 所有对应边和对应角都相等",
+  k1_warn: "注意顶点的书写顺序！",
+  k1_warn2: "表示 A↔P、B↔Q、C↔R。因此",
+  k1_warn3: "（而不是",
+  k1_warn3b: "！）",
+  k2_summary: "🎯 要点总结",
+  k2_p1: "证明两个三角形全等，只需证明以下4个条件中的",
+  k2_p1b: "任意一个",
+  k2_p1c: "：",
+  k2_rrr: "① SSS 条件 — 边边边",
+  fig2: "图2. SSS 条件 — 三组对应边分别相等：AB=PQ、BC=QR、CA=RP",
+  k2_rrr_p: "三组对应边分别相等。",
+  k2_rar: "② SAS 条件 — 边角边",
+  fig3: "图3. SAS 条件 — 两边及其夹角相等：AB=PQ、∠A=∠P、AC=PR",
+  k2_rar_p: "两条对应边相等",
+  k2_rar_pb: "且它们的夹角",
+  k2_rar_pc: "相等。",
+  k2_ara: "③ ASA / AAS / SAA 条件 — 角边角 / 角角边 / 边角角",
+  fig4: "图4. ASA/AAS/SAA 条件 — 一条边和两个对应角相等：∠A=∠P、AB=PQ、∠B=∠Q",
+  k2_ara_p: "一条对应边和两个对应角相等（边可以夹在两角之间，也可以与其中一个角相对）。",
+  tbl2_title: "📊 三角形全等条件汇总：",
+  tbl2_h1: "代号", tbl2_h2: "条件", tbl2_h3: "所需元素",
+  tbl2_code_rrr: "SSS", tbl2_code_rar: "SAS", tbl2_code_ara: "ASA", tbl2_code_aar: "AAS/SAA",
+  tbl2_rrr_s: "3组边相等", tbl2_rrr_e: "3条边",
+  tbl2_rar_s: "2边 + 夹角相等", tbl2_rar_e: "2边 + 1角",
+  tbl2_ara_s: "1边（夹边）+ 2角相等", tbl2_ara_e: "1边 + 2角",
+  tbl2_aar_s: "1边（对边）+ 2角相等", tbl2_aar_e: "1边 + 2角",
+  k3_intro: "全等不只适用于三角形。正方形、长方形、平行四边形、梯形、菱形、风筝形、圆以及其他多边形等所有平面图形都可以全等。一般条件仍然是：",
+  k3_intro_k: "所有对应边相等，并且所有对应角相等。",
+  k3_s1: "① 正方形",
+  fig5: "图5. 两个全等正方形 — 若边长相等（AB=PQ），则正方形ABCD ≅ 正方形PQRS",
+  k3_s1_cond_title: "正方形全等的条件：",
+  k3_s1_cond: "两个正方形全等，当且仅当",
+  k3_s1_cond_k: "边长相等",
+  k3_s1_squareName: "正方形",
+  k3_s1_note: "正方形的角都已经是90°，所以只需一个边长条件！",
+  k3_s1_prop_title: "全等时成立的性质：",
+  k3_s2: "② 长方形",
+  fig6: "图6. 两个全等长方形 — 长和宽分别相等时 ABCD ≅ PQRS（AB=PQ 且 BC=QR）",
+  k3_s2_cond_title: "长方形全等的条件：",
+  k3_s2_cond: "两个长方形全等，如果",
+  k3_s2_cond_k: "长度（", k3_s2_cond_kb: "）和宽度（", k3_s2_cond_kc: "）相等",
+  k3_s2_note: "长方形的角都是90°，因此只需两组对应边相等。",
+  k3_s2_ex_title: "快速示例：",
+  k3_s2_ex1: "长方形 6 cm × 4 cm", k3_s2_ex1b: "长方形 6 cm × 4 cm ✓",
+  k3_s2_ex2: "长方形 6 cm × 4 cm", k3_s2_ex2b: "长方形 4 cm × 6 cm ✗",
+  k3_s2_ex2c: "（请检查对应边的配对！）",
+  k3_s3: "③ 平行四边形",
+  fig7: "图7. 两个平行四边形的两组对应边及其夹角相等时，它们全等",
+  k3_s3_cond_title: "平行四边形全等的条件：",
+  k3_s3_cond: "两个平行四边形全等，如果",
+  k3_s3_cond_k: "两组对应边相等，并且夹角相等",
+  k3_s3_note: "⚠️ 两个平行四边形的边相等，若角不同则不一定全等！",
+  k3_s3_prop_title: "其他性质：",
+  k3_s3_and: "且", k3_s3_opp_angles: "（对角）", k3_s3_adj_angles: "（邻角）",
+  k3_s4: "④ 梯形",
+  fig8: "图8. 所有对应边和对应角分别相等时，两个梯形全等",
+  k3_s4_cond_title: "梯形全等的条件：",
+  k3_s4_cond: "两个梯形全等，如果",
+  k3_s4_cond_k: "所有对应边相等，并且所有对应角相等",
+  k3_s4_iso_title: "等腰梯形：",
+  k3_s4_iso_p: "全等的等腰梯形，其腰对应相等，底角也相等。",
+  k3_s4_legs: "（腰长相等）",
+  k3_s5: "⑤ 菱形",
+  fig9: "图9. 菱形边长和一个夹角相等时两个菱形全等（AB=PQ 且 ∠A=∠P）",
+  k3_s5_cond_title: "菱形全等的条件：",
+  k3_s5_cond: "两个菱形全等，如果",
+  k3_s5_cond_k: "边长相等，并且一个夹角相等",
+  k3_s5_note: "⚠️ 边长相等的两个菱形不一定全等 — 夹角也必须相等！",
+  k3_s5_prop_title: "其他性质：",
+  k3_s5_p1: "✅", k3_s5_p2: "（所有边相等）", k3_s5_p3: "且",
+  k3_s5_p4: "（对角相等）",
+  k3_s5_p5: "✅ 对角线互相垂直平分",
+  k3_s6: "⑥ 风筝形",
+  fig10: "图10. 所有对应边和对应角分别相等时，两个风筝形全等",
+  k3_s6_cond_title: "风筝形全等的条件：",
+  k3_s6_cond: "两个风筝形全等，如果",
+  k3_s6_cond_k: "所有对应边相等，并且所有对应角相等",
+  k3_s6_ang_note: "（夹在长度不同的边之间的角）",
+  k3_s6_prop_title: "风筝形的性质：",
+  k3_s6_p1: "✅", k3_s6_p1b: "且", k3_s6_p1c: "（两组邻边分别相等）",
+  k3_s6_p2: "✅", k3_s6_p2b: "（长度不同的边之间的角相等）",
+  k3_s6_p3: "✅ 主对角线 AC 垂直平分另一条对角线 BD",
+  k3_s7: "⑦ 圆",
+  fig11: "图11. 两个圆的半径相等时全等（r₁=r₂）",
+  k3_s7_cond_title: "圆全等的条件：",
+  k3_s7_cond: "两个圆全等，当且仅当",
+  k3_s7_cond_k: "半径相等",
+  k3_s7_circle1: "圆₁", k3_s7_circle2: "圆₂",
+  k3_s7_note: "圆没有角，所以只需一个条件：半径相等！",
+  k3_s7_prop_title: "结果：",
+  k3_s7_p1: "✅ 周长相等：", k3_s7_p2: "✅ 面积相等：",
+  tbl3_title: "📊 各类平面图形全等条件汇总：",
+  tbl3_h1: "图形", tbl3_h2: "全等条件",
+  tbl3_r1n: "三角形", tbl3_r1v: "SSS / SAS / ASA / AAS（任一）",
+  tbl3_r2n: "正方形", tbl3_r2v: "边长相等（1个条件）",
+  tbl3_r3n: "长方形", tbl3_r3v: "对应长和宽相等",
+  tbl3_r4n: "平行四边形", tbl3_r4v: "2组对应边 + 夹角相等",
+  tbl3_r5n: "梯形", tbl3_r5v: "所有对应边和角相等",
+  tbl3_r6n: "圆", tbl3_r6v: "半径相等（1个条件）",
+  tbl3_r7n: "n边形", tbl3_r7v: "所有n条边和n个角分别对应相等",
+  badge_mudah: "简单", badge_sedang: "中等",
+  c1_title: "例题1 — 全等三角形",
+  c1_q: "观察下图。",
+  fig12: "图12. 点P、T、U、S、R、Q的示意图 — 求全等三角形的个数",
+  c1_q2: "图中全等三角形的个数是……",
+  c1_discuss_title: "解答：",
+  c1_discuss_intro: "找出图中形成的三角形：",
+  c1_t1: "T处为直角", c1_t2: "S处为直角", c1_t3: "由T、U、S组成",
+  c1_discuss_p: "这三个三角形都满足全等条件，因此彼此全等。",
+  c1_answer: "答案：D. 3个 ✓",
+  c2_title: "例题2 — 全等公理",
+  c2_q: "已知", c2_q2: "根据哪条公理？……",
+  fig13: "图13. △CDA与△CBE，BC=CD且∠CDA=∠CBE=90°",
+  c2_opt_a: "A. 边、边、边", c2_opt_b: "B. 边、边、角",
+  c2_opt_c: "C. 边、角、边", c2_opt_d: "D. 角、边、角",
+  c2_discuss_title: "解答：",
+  c2_discuss_intro: "检查",
+  c2_discuss_introb: "的对应元素：",
+  c2_el1: "（角C相等，因为A、B、C共线）",
+  c2_el2: "（已知", c2_el2b: "）← 夹边",
+  c2_el3: "（直角）",
+  c2_discuss_p: "两个角和它们之间的边相等 → 公理",
+  c2_discuss_pb: "角–边–角（ASA）",
+  c2_answer: "答案：D. 角、边、角 ✓",
+  c3_title: "例题3 — 求m的值",
+  c3_q: "如果", c3_q2: "，求", c3_q3: "的值……",
+  fig14: "图14. △ABC ≅ △PQR — AC=(12−m)对应PR=5，求m",
+  c3_discuss_title: "解答：",
+  c3_discuss_intro: "由于", c3_discuss_introb: "，对应边为：",
+  c3_el1: "边AC对应边PR",
+  c3_answer: "答案：D. 7 ✓",
+  c4_title: "例题4 — 全等正方形的周长",
+  c4_q: "两个全等正方形的边长都是",
+  c4_q2: "每个正方形的周长是多少？",
+  c4_math: "1{,}234.5",
+  c4_result: "4\\times1{,}234.5=4{,}938.0\\,\\mathrm{cm}",
+  c4_solution: "正方形周长 = 4 × 边长 =",
+  c4_answer: "答案：",
+  rang_title: "📋 总结 — 平面图形的全等",
+  rang_h1: "图形", rang_h2: "全等条件", rang_h3: "最少条件数",
+  rang_r1n: "三角形", rang_r1v: "SSS、SAS、ASA或AAS（任一）", rang_r1e: "3个元素",
+  rang_r2n: "正方形", rang_r2v: "边长相等", rang_r2e: "1个元素",
+  rang_r3n: "长方形", rang_r3v: "对应长和宽相等", rang_r3e: "2个元素",
+  rang_r4n: "平行四边形", rang_r4v: "2组对应边及夹角相等", rang_r4e: "3个元素",
+  rang_r5n: "梯形和多边形", rang_r5v: "所有对应边和角相等", rang_r5e: "所有元素",
+  rang_r6n: "圆", rang_r6v: "半径相等", rang_r6e: "1个元素",
+  rang_note1: "定义：",
+  rang_note1b: "两个图形全等（≅），当且仅当所有对应边和对应角分别相等",
+  rang_note2: "重要记号：",
+  rang_note2b: "表示 A↔P、B↔Q、C↔R。顶点顺序决定对应关系！",
+  rang_note3: "图形可以旋转或反射：",
+  rang_note3b: "即使一个图形经过旋转或反射，全等关系仍成立",
+  tips_title: "💡 提示与技巧",
+  tips_1t: "记住三角形全等条件（SSS、SAS、ASA、AAS）：",
+  tips_1b: "S = 边（Side），A = 角（Angle）。这些条件保证三条边和三个角都相等，无需逐一检查！",
+  tips_2t: "根据记号快速判断对应边：",
+  tips_2b: "如果", tips_2bb: "，将位置相同的顶点配对：",
+  tips_3t: "在选择题中区分全等与相似：",
+  tips_3b: "若比例因子 k ≠ 1 → 相似而非全等；若所有尺寸完全相等 → 全等（k=1）。",
+  tips_4t: "对于“求x的值”问题：",
+  tips_4b: "使用相等的对应边。如果",
+  tips_4bb: "，直接列方程求解。",
+  conc_title: "✅ 结论",
+  conc_p1: "平面图形的全等指",
+  conc_p1k: "“完全重合”",
+  conc_p1b: "——两个图形可以无空隙、无剩余地叠在一起。",
+  conc_l1: "🔹 并非所有图形都需要全部条件：",
+  conc_l1k: "正方形和圆", conc_l1b: "只需1个条件",
+  conc_l2: "🔹 三角形有", conc_l2k: "4种证明方法",
+  conc_l2b: "证明全等（SSS、SAS、ASA、AAS）",
+  conc_l3: "🔹 旋转或反射后的图形", conc_l3k: "仍然全等",
+  conc_l4: "🔹 全等是相似的一种特殊情况：",
+  conc_note: "全等是几何证明的基础，可用于证明平行线、相等的角和立体图形的性质。",
+  back: "← 返回全等与相似",
+};
+
+const ru: T = {
+  pageTitle: "РАВЕНСТВО ПЛОСКИХ ФИГУР",
+  pageSub: "9 класс · Подобие и равенство фигур · Математика",
+  sec_intro: "🧱 Что такое равные фигуры?",
+  sec_konsep1: "📘 Раздел 1 — Свойства равных треугольников",
+  sec_konsep2: "📘 Раздел 2 — Признаки равенства треугольников",
+  sec_bangunLain: "📘 Раздел 3 — Равенство других плоских фигур",
+  sec_contoh: "📝 Задачи — Равенство треугольников и фигур",
+  intro_p1: "Две плоские фигуры называются",
+  intro_k1: "равными",
+  intro_p1b: ", если одну можно наложить",
+  intro_em: "точно",
+  intro_p1c: "на другую — как две одинаковые детали пазла без зазоров. Равенство применимо к",
+  intro_k2: "любым плоским фигурам",
+  intro_p1d: ", а не только к треугольникам!",
+  intro_formal: "📌 Формальное определение",
+  intro_f1: "Две плоские фигуры",
+  intro_f2: "и",
+  intro_f3: "называются равными",
+  intro_f3b: "тогда и только тогда, когда:",
+  intro_c1: "① Все соответствующие стороны",
+  intro_c1b: "равны",
+  intro_c2: "② Все соответствующие углы",
+  intro_c2b: "равны",
+  intro_note: "Равные фигуры можно перевернуть (отразить) или повернуть, чтобы они совпали.",
+  k1_summary: "🎯 Краткий итог",
+  k1_p1: "Если",
+  k1_p1b: ", то одновременно выполняются два свойства:",
+  k1_rusuk: "① Соответствующие стороны равны:",
+  k1_sudut: "② Соответствующие углы равны:",
+  k1_diag_label: "🔍 ИЛЛЮСТРАЦИЯ СВОЙСТВ РАВНЫХ ТРЕУГОЛЬНИКОВ:",
+  fig1: "Рисунок 1. △ABC ≅ △PQR — все соответствующие стороны и углы равны",
+  k1_warn: "Следите за порядком вершин!",
+  k1_warn2: "означает A↔P, B↔Q, C↔R. Значит",
+  k1_warn3: "(не",
+  k1_warn3b: "!)",
+  k2_summary: "🎯 Краткий итог",
+  k2_p1: "Чтобы доказать равенство двух треугольников, достаточно показать",
+  k2_p1b: "любой один",
+  k2_p1c: "из 4 признаков:",
+  k2_rrr: "① Признак SSS — сторона-сторона-сторона",
+  fig2: "Рисунок 2. Признак SSS — равны три пары соответствующих сторон: AB=PQ, BC=QR, CA=RP",
+  k2_rrr_p: "Равны все три пары соответствующих сторон.",
+  k2_rar: "② Признак SAS — сторона-угол-сторона",
+  fig3: "Рисунок 3. Признак SAS — равны две стороны и угол между ними: AB=PQ, ∠A=∠P, AC=PR",
+  k2_rar_p: "Две соответствующие стороны равны",
+  k2_rar_pb: "и угол между ними",
+  k2_rar_pc: "равен.",
+  k2_ara: "③ Признаки ASA / AAS / SAA — угол-сторона-угол / угол-угол-сторона / сторона-угол-угол",
+  fig4: "Рисунок 4. Признаки ASA/AAS/SAA — равны одна сторона и два соответствующих угла: ∠A=∠P, AB=PQ, ∠B=∠Q",
+  k2_ara_p: "Равны одна соответствующая сторона и два соответствующих угла (сторона может быть между углами или напротив одного из них).",
+  tbl2_title: "📊 ПРИЗНАКИ РАВЕНСТВА ТРЕУГОЛЬНИКОВ:",
+  tbl2_h1: "Код", tbl2_h2: "Признак", tbl2_h3: "Необходимые элементы",
+  tbl2_code_rrr: "SSS", tbl2_code_rar: "SAS", tbl2_code_ara: "ASA", tbl2_code_aar: "AAS/SAA",
+  tbl2_rrr_s: "3 пары равных сторон", tbl2_rrr_e: "3 стороны",
+  tbl2_rar_s: "2 стороны + угол между ними", tbl2_rar_e: "2 стороны + 1 угол",
+  tbl2_ara_s: "1 сторона между углами + 2 равных угла", tbl2_ara_e: "1 сторона + 2 угла",
+  tbl2_aar_s: "1 сторона напротив угла + 2 равных угла", tbl2_aar_e: "1 сторона + 2 угла",
+  k3_intro: "Равенство фигур относится не только к треугольникам. Равными могут быть любые плоские фигуры — квадраты, прямоугольники, параллелограммы, трапеции, ромбы, дельтоиды, окружности и другие многоугольники. Общее условие остаётся тем же:",
+  k3_intro_k: "все соответствующие стороны и все соответствующие углы равны.",
+  k3_s1: "① Квадрат",
+  fig5: "Рисунок 5. Два равных квадрата — ABCD ≅ PQRS, если их стороны равны (AB=PQ)",
+  k3_s1_cond_title: "Признак равенства квадратов:",
+  k3_s1_cond: "Два квадрата равны тогда и только тогда, когда",
+  k3_s1_cond_k: "их стороны равны",
+  k3_s1_squareName: "Квадрат",
+  k3_s1_note: "Все углы квадрата уже равны 90°, поэтому достаточно одного условия о сторонах!",
+  k3_s1_prop_title: "Свойства равных фигур:",
+  k3_s2: "② Прямоугольник",
+  fig6: "Рисунок 6. Два равных прямоугольника — ABCD ≅ PQRS, если равны длина и ширина (AB=PQ и BC=QR)",
+  k3_s2_cond_title: "Признак равенства прямоугольников:",
+  k3_s2_cond: "Два прямоугольника равны, если",
+  k3_s2_cond_k: "их длина (", k3_s2_cond_kb: ") и ширина (", k3_s2_cond_kc: ") равны",
+  k3_s2_note: "Все углы прямоугольника равны 90°, поэтому достаточно равенства двух пар соответствующих сторон.",
+  k3_s2_ex_title: "Краткий пример:",
+  k3_s2_ex1: "Прямоугольник 6 см × 4 см", k3_s2_ex1b: "прямоугольник 6 см × 4 см ✓",
+  k3_s2_ex2: "Прямоугольник 6 см × 4 см", k3_s2_ex2b: "прямоугольник 4 см × 6 см ✗",
+  k3_s2_ex2c: "(проверьте соответствие сторон!)",
+  k3_s3: "③ Параллелограмм",
+  fig7: "Рисунок 7. Параллелограммы равны, если равны две пары соответствующих сторон и угол между ними",
+  k3_s3_cond_title: "Признак равенства параллелограммов:",
+  k3_s3_cond: "Два параллелограмма равны, если",
+  k3_s3_cond_k: "две соответствующие стороны и угол между ними равны",
+  k3_s3_note: "⚠️ Равенства сторон недостаточно, если углы параллелограммов различаются!",
+  k3_s3_prop_title: "Дополнительные свойства:",
+  k3_s3_and: "и", k3_s3_opp_angles: "(противолежащие углы)", k3_s3_adj_angles: "(смежные углы)",
+  k3_s4: "④ Трапеция",
+  fig8: "Рисунок 8. Трапеции равны, если равны все соответствующие стороны и углы",
+  k3_s4_cond_title: "Признак равенства трапеций:",
+  k3_s4_cond: "Две трапеции равны, если",
+  k3_s4_cond_k: "все соответствующие стороны и все соответствующие углы равны",
+  k3_s4_iso_title: "Равнобедренная трапеция:",
+  k3_s4_iso_p: "У равных равнобедренных трапеций соответствующие боковые стороны и углы при основаниях равны.",
+  k3_s4_legs: "(равные боковые стороны)",
+  k3_s5: "⑤ Ромб",
+  fig9: "Рисунок 9. Ромбы равны, если равны их стороны и один угол между сторонами (AB=PQ и ∠A=∠P)",
+  k3_s5_cond_title: "Признак равенства ромбов:",
+  k3_s5_cond: "Два ромба равны, если",
+  k3_s5_cond_k: "их стороны и один угол между ними равны",
+  k3_s5_note: "⚠️ Ромбы с равными сторонами не обязательно равны — должны совпадать и углы!",
+  k3_s5_prop_title: "Дополнительные свойства:",
+  k3_s5_p1: "✅", k3_s5_p2: "(все стороны равны)", k3_s5_p3: "и",
+  k3_s5_p4: "(противолежащие углы равны)",
+  k3_s5_p5: "✅ Диагонали перпендикулярно пересекаются и делятся пополам",
+  k3_s6: "⑥ Дельтоид",
+  fig10: "Рисунок 10. Дельтоиды равны, если равны все соответствующие стороны и углы",
+  k3_s6_cond_title: "Признак равенства дельтоидов:",
+  k3_s6_cond: "Два дельтоида равны, если",
+  k3_s6_cond_k: "все соответствующие стороны и углы равны",
+  k3_s6_ang_note: "(угол между сторонами разной длины)",
+  k3_s6_prop_title: "Свойства дельтоида:",
+  k3_s6_p1: "✅", k3_s6_p1b: "и", k3_s6_p1c: "(две пары равных соседних сторон)",
+  k3_s6_p2: "✅", k3_s6_p2b: "(равны углы между сторонами разной длины)",
+  k3_s6_p3: "✅ Главная диагональ AC перпендикулярно делит пополам диагональ BD",
+  k3_s7: "⑦ Круг",
+  fig11: "Рисунок 11. Два круга равны, если их радиусы равны (r₁=r₂)",
+  k3_s7_cond_title: "Признак равенства кругов:",
+  k3_s7_cond: "Два круга равны тогда и только тогда, когда",
+  k3_s7_cond_k: "их радиусы равны",
+  k3_s7_circle1: "Окружность₁", k3_s7_circle2: "Окружность₂",
+  k3_s7_note: "У круга нет углов, поэтому достаточно одного условия: равенства радиусов!",
+  k3_s7_prop_title: "Следствия:",
+  k3_s7_p1: "✅ Длины окружностей равны:", k3_s7_p2: "✅ Площади равны:",
+  tbl3_title: "📊 ПРИЗНАКИ РАВЕНСТВА ПЛОСКИХ ФИГУР:",
+  tbl3_h1: "Фигура", tbl3_h2: "Условие равенства",
+  tbl3_r1n: "Треугольник", tbl3_r1v: "SSS / SAS / ASA / AAS (любой один)",
+  tbl3_r2n: "Квадрат", tbl3_r2v: "Равные стороны (1 условие)",
+  tbl3_r3n: "Прямоугольник", tbl3_r3v: "Равные соответствующие длина и ширина",
+  tbl3_r4n: "Параллелограмм", tbl3_r4v: "2 стороны и угол между ними равны",
+  tbl3_r5n: "Трапеция", tbl3_r5v: "Равны все соответствующие стороны и углы",
+  tbl3_r6n: "Круг", tbl3_r6v: "Равные радиусы (1 условие)",
+  tbl3_r7n: "n-угольник", tbl3_r7v: "Все n соответствующих сторон и углов равны",
+  badge_mudah: "ЛЕГКО", badge_sedang: "СРЕДНЕ",
+  c1_title: "Пример 1 — Равные треугольники",
+  c1_q: "Рассмотрите рисунок.",
+  fig12: "Рисунок 12. Точки P, T, U, S, R, Q — найдите число равных треугольников",
+  c1_q2: "Число равных треугольников на рисунке равно . . . .",
+  c1_discuss_title: "РЕШЕНИЕ:",
+  c1_discuss_intro: "Определим треугольники на рисунке:",
+  c1_t1: "прямой угол при T", c1_t2: "прямой угол при S", c1_t3: "образован точками T, U, S",
+  c1_discuss_p: "Все три треугольника равны, поскольку выполняются признаки равенства.",
+  c1_answer: "Ответ: D. 3 треугольника ✓",
+  c2_title: "Пример 2 — Аксиома равенства",
+  c2_q: "Дано", c2_q2: "по какой аксиоме? . . . .",
+  fig13: "Рисунок 13. △CDA и △CBE, BC=CD и ∠CDA=∠CBE=90°",
+  c2_opt_a: "A. сторона, сторона, сторона", c2_opt_b: "B. сторона, сторона, угол",
+  c2_opt_c: "C. сторона, угол, сторона", c2_opt_d: "D. угол, сторона, угол",
+  c2_discuss_title: "РЕШЕНИЕ:",
+  c2_discuss_intro: "Проверим соответствующие элементы",
+  c2_discuss_introb: "и",
+  c2_el1: "(угол C равен, так как A, B, C лежат на одной прямой)",
+  c2_el2: "(по условию", c2_el2b: ") ← сторона между углами",
+  c2_el3: "(прямые углы)",
+  c2_discuss_p: "Равны два угла и сторона между ними → признак",
+  c2_discuss_pb: "угол–сторона–угол (ASA)",
+  c2_answer: "Ответ: D. угол, сторона, угол ✓",
+  c3_title: "Пример 3 — Найдите значение m",
+  c3_q: "Если", c3_q2: ", найдите значение", c3_q3: ". . . .",
+  fig14: "Рисунок 14. △ABC ≅ △PQR — стороне AC=(12−m) соответствует PR=5; найдите m",
+  c3_discuss_title: "РЕШЕНИЕ:",
+  c3_discuss_intro: "Так как", c3_discuss_introb: ", соответствующие стороны:",
+  c3_el1: "Стороне AC соответствует сторона PR",
+  c3_answer: "Ответ: D. 7 ✓",
+  c4_title: "Пример 4 — Периметр равного квадрата",
+  c4_q: "Длина стороны каждого из двух равных квадратов равна",
+  c4_q2: "Чему равен периметр каждого квадрата?",
+  c4_math: "1\\,234{,}5",
+  c4_result: "4\\times1\\,234{,}5=4\\,938{,}0\\,\\mathrm{cm}",
+  c4_solution: "Периметр квадрата = 4 × сторона =",
+  c4_answer: "Ответ:",
+  rang_title: "📋 Итог — Равенство плоских фигур",
+  rang_h1: "Фигура", rang_h2: "Условие равенства", rang_h3: "Мин. число условий",
+  rang_r1n: "Треугольник", rang_r1v: "SSS, SAS, ASA или AAS (любой один)", rang_r1e: "3 элемента",
+  rang_r2n: "Квадрат", rang_r2v: "Равные стороны", rang_r2e: "1 элемент",
+  rang_r3n: "Прямоугольник", rang_r3v: "Равные длина и ширина", rang_r3e: "2 элемента",
+  rang_r4n: "Параллелограмм", rang_r4v: "2 стороны и угол между ними равны", rang_r4e: "3 элемента",
+  rang_r5n: "Трапеция и многоугольник", rang_r5v: "Равны все соответствующие стороны и углы", rang_r5e: "Все элементы",
+  rang_r6n: "Круг", rang_r6v: "Равные радиусы", rang_r6e: "1 элемент",
+  rang_note1: "Определение:",
+  rang_note1b: "Фигуры равны (≅), если все соответствующие стороны и углы равны",
+  rang_note2: "Важная запись:",
+  rang_note2b: "означает A↔P, B↔Q, C↔R. Порядок вершин задаёт соответствие!",
+  rang_note3: "Фигуры можно поворачивать и отражать:",
+  rang_note3b: "Равенство сохраняется, даже если одну фигуру повернуть или отразить",
+  tips_title: "💡 Советы",
+  tips_1t: "Запомните признаки равенства треугольников (SSS, SAS, ASA, AAS):",
+  tips_1b: "S = сторона, A = угол (Angle). Эти признаки гарантируют равенство всех трёх сторон и углов — не нужно проверять их по отдельности!",
+  tips_2t: "Как быстро определить соответствующие стороны по записи:",
+  tips_2b: "Если", tips_2bb: ", сопоставьте вершины в одинаковом порядке:",
+  tips_3t: "Отличайте равенство от подобия в тестах:",
+  tips_3b: "Если коэффициент масштаба k ≠ 1 → фигуры подобны, но не равны. Если размеры полностью совпадают → равны (k=1).",
+  tips_4t: "В задачах «найдите значение x»:",
+  tips_4b: "Используйте пары равных соответствующих сторон. Если",
+  tips_4bb: ", составьте уравнение и решите его.",
+  conc_title: "✅ Вывод",
+  conc_p1: "Равенство плоских фигур означает",
+  conc_p1k: "«полное совпадение»",
+  conc_p1b: "— фигуры можно наложить друг на друга без зазоров и остатков.",
+  conc_l1: "🔹 Не каждой фигуре нужны все условия:",
+  conc_l1k: "квадрату и кругу", conc_l1b: "достаточно 1 условия",
+  conc_l2: "🔹 Для треугольников есть", conc_l2k: "4 способа доказательства",
+  conc_l2b: "равенства (SSS, SAS, ASA, AAS)",
+  conc_l3: "🔹 Повернутая или отражённая фигура", conc_l3k: "остаётся равной",
+  conc_l4: "🔹 Равенство — частный случай подобия:",
+  conc_note: "Равенство фигур — основа геометрических доказательств: с его помощью доказывают параллельность прямых, равенство углов и свойства пространственных фигур.",
+  back: "← Назад к теме «Подобие и равенство»",
+};
+
+const translations = {
+  id,
+  en,
+  ja,
+  "ms-MY": msMY,
+  "zh-CN": zhCN,
+  ru,
+} satisfies Record<Language, T>;
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SVG DIAGRAMS — TRIANGLE CONGRUENCE
@@ -1458,7 +2113,7 @@ const DiagramTrapesium = () => (
 const KekongruenBangunDatarPage = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const t = translations[language as keyof typeof translations] ?? translations.id;
+  const t = pickLang(translations, language);
   const [expandedSections, setExpandedSections] = useState<string[]>([
     "intro", "konsep1", "konsep2", "bangunLain", "contoh1",
   ]);
@@ -1552,7 +2207,7 @@ const KekongruenBangunDatarPage = () => {
                 </div>
                 <div className="bg-slate-800/60 border border-slate-600/40 rounded-lg p-4">
                   <p className="font-body text-xs font-semibold text-slate-300 mb-3">{t.k1_diag_label}</p>
-                  <figure>
+                  <figure aria-label={t.fig1}>
                     <DragCongruenceDemo shape="triangle" leftLabels={["A","B","C"]} rightLabels={["P","Q","R"]} angleMarks={["○","×","y"]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig1}</figcaption>
                   </figure>
@@ -1583,7 +2238,7 @@ const KekongruenBangunDatarPage = () => {
                 {/* SSS / RRR */}
                 <div className="bg-slate-800/60 border border-green-500/30 rounded-lg p-4 space-y-3">
                   <p className="font-body text-sm font-semibold text-green-300">{t.k2_rrr}</p>
-                  <figure>
+                  <figure aria-label={t.fig2}>
                     <DragCongruenceDemo shape="triangle" leftLabels={["A","B","C"]} rightLabels={["P","Q","R"]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig2}</figcaption>
                   </figure>
@@ -1596,7 +2251,7 @@ const KekongruenBangunDatarPage = () => {
                 {/* SAS / RAR */}
                 <div className="bg-slate-800/60 border border-purple-500/30 rounded-lg p-4 space-y-3">
                   <p className="font-body text-sm font-semibold text-purple-300">{t.k2_rar}</p>
-                  <figure>
+                  <figure aria-label={t.fig3}>
                     <DragCongruenceDemo shape="triangle" leftLabels={["A","B","C"]} rightLabels={["P","Q","R"]} angleMarks={["○"]} hideTicks={[2]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig3}</figcaption>
                   </figure>
@@ -1611,7 +2266,7 @@ const KekongruenBangunDatarPage = () => {
                 {/* ASA / ARA / AAR */}
                 <div className="bg-slate-800/60 border border-cyan-500/30 rounded-lg p-4 space-y-3">
                   <p className="font-body text-sm font-semibold text-cyan-300">{t.k2_ara}</p>
-                  <figure>
+                  <figure aria-label={t.fig4}>
                     <DragCongruenceDemo shape="triangle" leftLabels={["A","B","C"]} rightLabels={["P","Q","R"]} angleMarks={["","×","y"]} hideTicks={[0,2]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig4}</figcaption>
                   </figure>
@@ -1659,7 +2314,7 @@ const KekongruenBangunDatarPage = () => {
                 {/* Persegi */}
                 <div className="bg-slate-800/60 border border-blue-500/30 rounded-lg p-4 space-y-3">
                   <p className="font-body text-sm font-semibold text-blue-300">{t.k3_s1}</p>
-                  <figure>
+                  <figure aria-label={t.fig5}>
                     <DragCongruenceDemo shape="square" leftLabels={["A","B","C","D"]} rightLabels={["P","Q","R","S"]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig5}</figcaption>
                   </figure>
@@ -1684,7 +2339,7 @@ const KekongruenBangunDatarPage = () => {
                 {/* Persegi Panjang */}
                 <div className="bg-slate-800/60 border border-sky-500/30 rounded-lg p-4 space-y-3">
                   <p className="font-body text-sm font-semibold text-sky-300">{t.k3_s2}</p>
-                  <figure>
+                  <figure aria-label={t.fig6}>
                     <DragCongruenceDemo shape="rectangle" leftLabels={["A","B","C","D"]} rightLabels={["P","Q","R","S"]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig6}</figcaption>
                   </figure>
@@ -1713,7 +2368,7 @@ const KekongruenBangunDatarPage = () => {
                 {/* Jajar Genjang */}
                 <div className="bg-slate-800/60 border border-yellow-500/30 rounded-lg p-4 space-y-3">
                   <p className="font-body text-sm font-semibold text-yellow-300">{t.k3_s3}</p>
-                  <figure>
+                  <figure aria-label={t.fig7}>
                     <DragCongruenceDemo shape="parallelogram" leftLabels={["A","B","C","D"]} rightLabels={["P","Q","R","S"]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig7}</figcaption>
                   </figure>
@@ -1736,7 +2391,7 @@ const KekongruenBangunDatarPage = () => {
                 {/* Trapesium */}
                 <div className="bg-slate-800/60 border border-teal-500/30 rounded-lg p-4 space-y-3">
                   <p className="font-body text-sm font-semibold text-teal-300">{t.k3_s4}</p>
-                  <figure>
+                  <figure aria-label={t.fig8}>
                     <DragCongruenceDemo shape="trapezoid" leftLabels={["A","B","C","D"]} rightLabels={["P","Q","R","S"]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig8}</figcaption>
                   </figure>
@@ -1761,7 +2416,7 @@ const KekongruenBangunDatarPage = () => {
                 {/* Belah Ketupat */}
                 <div className="bg-slate-800/60 border border-violet-500/30 rounded-lg p-4 space-y-3">
                   <p className="font-body text-sm font-semibold text-violet-300">{t.k3_s5}</p>
-                  <figure>
+                  <figure aria-label={t.fig9}>
                     <DragCongruenceDemo shape="rhombus" leftLabels={["A","B","C","D"]} rightLabels={["P","Q","R","S"]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig9}</figcaption>
                   </figure>
@@ -1784,7 +2439,7 @@ const KekongruenBangunDatarPage = () => {
                 {/* Layang-layang */}
                 <div className="bg-slate-800/60 border border-rose-500/30 rounded-lg p-4 space-y-3">
                   <p className="font-body text-sm font-semibold text-rose-300">{t.k3_s6}</p>
-                  <figure>
+                  <figure aria-label={t.fig10}>
                     <DragCongruenceDemo shape="kite" leftLabels={["A","B","C","D"]} rightLabels={["P","Q","R","S"]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig10}</figcaption>
                   </figure>
@@ -1808,7 +2463,7 @@ const KekongruenBangunDatarPage = () => {
                 {/* Lingkaran */}
                 <div className="bg-slate-800/60 border border-pink-500/30 rounded-lg p-4 space-y-3">
                   <p className="font-body text-sm font-semibold text-pink-300">{t.k3_s7}</p>
-                  <figure>
+                  <figure aria-label={t.fig11}>
                     <DragCongruenceDemo shape="circle" leftLabels={["O₁"]} rightLabels={["O₂"]} />
                     <figcaption className="text-center text-xs text-white/50 italic mt-2 font-body">{t.fig11}</figcaption>
                   </figure>
@@ -1869,8 +2524,8 @@ const KekongruenBangunDatarPage = () => {
                   </div>
                   <div className="bg-slate-800/50 rounded-lg p-4 space-y-3">
                     <p className="font-body text-sm text-white">{t.c1_q}</p>
-                    <figure>
-                      <svg viewBox="0 0 280 275" className="w-full max-w-xs mx-auto">
+                    <figure aria-label={t.fig12}>
+                      <svg role="img" aria-label={t.fig12} viewBox="0 0 280 275" className="w-full max-w-xs mx-auto">
                         <line x1="35" y1="135" x2="240" y2="18"  stroke="#facc15" strokeWidth="1.6" />
                         <line x1="35" y1="135" x2="240" y2="257" stroke="#facc15" strokeWidth="1.6" />
                         <line x1="35" y1="135" x2="149" y2="136" stroke="#facc15" strokeWidth="1.6" />
@@ -1926,8 +2581,8 @@ const KekongruenBangunDatarPage = () => {
                     <p className="font-body text-sm text-white">
                       {t.c2_q} <InlineMath math="BC = CD" />. <InlineMath math="\triangle CDA \cong \triangle CBE" /> {t.c2_q2}
                     </p>
-                    <figure>
-                      <svg viewBox="0 0 260 250" className="w-full max-w-xs mx-auto">
+                    <figure aria-label={t.fig13}>
+                      <svg role="img" aria-label={t.fig13} viewBox="0 0 260 250" className="w-full max-w-xs mx-auto">
                         <line x1="20"  y1="220" x2="220" y2="220" stroke="#facc15" strokeWidth="1.6" />
                         <line x1="120" y1="20"  x2="120" y2="220" stroke="#facc15" strokeWidth="1.6" />
                         <line x1="120" y1="20"  x2="220" y2="220" stroke="#facc15" strokeWidth="1.6" />
@@ -1979,8 +2634,8 @@ const KekongruenBangunDatarPage = () => {
                     <p className="font-body text-sm text-white">
                       {t.c3_q} <InlineMath math="\triangle ABC \cong \triangle PQR" />, {t.c3_q2} <InlineMath math="m" /> {t.c3_q3}
                     </p>
-                    <figure>
-                      <svg viewBox="0 0 270 195" className="w-full max-w-sm mx-auto">
+                    <figure aria-label={t.fig14}>
+                      <svg role="img" aria-label={t.fig14} viewBox="0 0 270 195" className="w-full max-w-sm mx-auto">
                         <polygon points="20,165 120,165 55,25" fill="none" stroke="#facc15" strokeWidth="1.6" strokeLinejoin="round" />
                         <text x="12" y="103" fontSize="11" fill="#ffffff" fontFamily="serif" fontStyle="italic"
                           textAnchor="middle" transform="rotate(-57,12,103)">12 – m</text>
@@ -2019,6 +2674,26 @@ const KekongruenBangunDatarPage = () => {
                         <p><InlineMath math="m = 12 - 5 = 7" /></p>
                       </div>
                       <p><strong className="text-orange-300">{t.c3_answer}</strong></p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-l-4 border-cyan-500 pl-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-cyan-500/20 text-cyan-300 text-xs font-bold px-2 py-1 rounded">{t.badge_mudah}</span>
+                    <span className="font-body font-semibold text-white">{t.c4_title}</span>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-lg p-4 space-y-3">
+                    <p className="font-body text-sm text-white">
+                      {t.c4_q} <InlineMath math={`${t.c4_math}\\,\\mathrm{cm}`} />. {t.c4_q2}
+                    </p>
+                    <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-lg p-4">
+                      <p className="font-body text-sm text-white/80">
+                        {t.c4_solution} <InlineMath math={t.c4_result} />
+                      </p>
+                      <p className="font-body text-sm font-semibold text-cyan-300 mt-2">
+                        {t.c4_answer} <InlineMath math={t.c4_result} />
+                      </p>
                     </div>
                   </div>
                 </div>

@@ -1,8 +1,79 @@
 import { useState, useRef } from "react";
+import { useLanguage, type Language } from "@/contexts/LanguageContext";
+import { pickLang } from "@/lib/pickLang";
 
 export type CongruentShapeType =
   | "triangle" | "square" | "rectangle" | "parallelogram"
   | "rhombus" | "kite" | "circle" | "trapezoid";
+
+const id = {
+  fixedLabel: "Bangun 1 (diam)",
+  moveLabel: "← Geser ke kiri",
+  snappedLabel: "✓ BERIMPIT SEMPURNA — KONGRUEN!",
+  dragInstruction: "👆 Seret bangun hijau ke kiri — tumpangkan tepat di atas bangun kuning!",
+  snappedMessageBefore: "🎉 Kedua bangun ",
+  snappedMessageEmphasis: "berimpit sempurna",
+  snappedMessageAfter: " — itulah makna KONGRUEN!",
+  resetLabel: "↺ Ulangi",
+};
+type T = typeof id;
+
+const en: T = {
+  fixedLabel: "Figure 1 (stationary)",
+  moveLabel: "← Drag left",
+  snappedLabel: "✓ PERFECTLY OVERLAPPED — CONGRUENT!",
+  dragInstruction: "👆 Drag the green shape left — place it exactly over the yellow shape!",
+  snappedMessageBefore: "🎉 Both figures ",
+  snappedMessageEmphasis: "overlap perfectly",
+  snappedMessageAfter: " — that's what congruent means!",
+  resetLabel: "↺ Reset",
+};
+
+const msMY: T = {
+  fixedLabel: "Bentuk 1 (tidak bergerak)",
+  moveLabel: "← Seret ke kiri",
+  snappedLabel: "✓ BERTINDIH SEMPURNA — KONGRUEN!",
+  dragInstruction: "👆 Seret bentuk hijau ke kiri — tindihkan tepat di atas bentuk kuning!",
+  snappedMessageBefore: "🎉 Kedua-dua bentuk ",
+  snappedMessageEmphasis: "bertindih dengan sempurna",
+  snappedMessageAfter: " — inilah maksud kongruen!",
+  resetLabel: "↺ Ulang semula",
+};
+
+const ja: T = {
+  fixedLabel: "図形1（固定）",
+  moveLabel: "← 左へドラッグ",
+  snappedLabel: "✓ 完全に重なりました — 合同です！",
+  dragInstruction: "👆 緑の図形を左へドラッグし、黄色の図形にぴったり重ねましょう！",
+  snappedMessageBefore: "🎉 2つの図形が",
+  snappedMessageEmphasis: "ぴったり重なりました",
+  snappedMessageAfter: "。これが合同という意味です！",
+  resetLabel: "↺ リセット",
+};
+
+const zhCN: T = {
+  fixedLabel: "图形1（固定）",
+  moveLabel: "← 向左拖动",
+  snappedLabel: "✓ 完全重合 — 全等！",
+  dragInstruction: "👆 将绿色图形向左拖动，与黄色图形完全重合！",
+  snappedMessageBefore: "🎉 两个图形",
+  snappedMessageEmphasis: "完全重合",
+  snappedMessageAfter: "——这就是全等！",
+  resetLabel: "↺ 重置",
+};
+
+const ru: T = {
+  fixedLabel: "Фигура 1 (неподвижная)",
+  moveLabel: "← Перетащите влево",
+  snappedLabel: "✓ ИДЕАЛЬНО СОВПАЛИ — ФИГУРЫ РАВНЫ!",
+  dragInstruction: "👆 Перетащите зелёную фигуру влево и точно наложите её на жёлтую!",
+  snappedMessageBefore: "🎉 Обе фигуры ",
+  snappedMessageEmphasis: "полностью совпадают",
+  snappedMessageAfter: " — это и означает равенство фигур!",
+  resetLabel: "↺ Сбросить",
+};
+
+const translations = { id, en, "ms-MY": msMY, ja, "zh-CN": zhCN, ru } satisfies Record<Language, T>;
 
 function mkTick(
   x1: number, y1: number, x2: number, y2: number,
@@ -337,6 +408,8 @@ export const DragCongruenceDemo = ({
   /** tick indices to hide — only used when shape="triangle". 0=AB(double), 1=AC(single), 2=BC(triple) */
   hideTicks?: number[];
 }) => {
+  const { language } = useLanguage();
+  const t = pickLang(translations, language);
   const { render: _render, vbH, cy: CY } = SHAPES[shape];
   const render = (hideTicks && shape === "triangle")
     ? (cx: number, cy: number, fill: string, stroke: string, op: number) =>
@@ -516,12 +589,12 @@ export const DragCongruenceDemo = ({
 
           {!isSnapped ? (
             <>
-              <text x={TARGET.x} y={vbH - 7} textAnchor="middle" fontSize="8.5" fill="#475569" fontFamily="sans-serif">Bangun 1 (diam)</text>
-              <text x={START.x}  y={vbH - 7} textAnchor="middle" fontSize="8.5" fill="#4ade80" fontFamily="sans-serif">← Geser ke kiri</text>
+              <text x={TARGET.x} y={vbH - 7} textAnchor="middle" fontSize="8.5" fill="#475569" fontFamily="sans-serif">{t.fixedLabel}</text>
+              <text x={START.x}  y={vbH - 7} textAnchor="middle" fontSize="8.5" fill="#4ade80" fontFamily="sans-serif">{t.moveLabel}</text>
             </>
           ) : (
             <text x={TARGET.x} y={vbH - 7} textAnchor="middle" fontSize="9.5" fill="#22c55e"
-              fontWeight="bold" fontFamily="sans-serif">✓ BERIMPIT SEMPURNA — KONGRUEN!</text>
+              fontWeight="bold" fontFamily="sans-serif">{t.snappedLabel}</text>
           )}
         </svg>
       </div>
@@ -530,17 +603,17 @@ export const DragCongruenceDemo = ({
         {!isSnapped
           ? (
             <p className="font-body text-xs text-white/55">
-              👆 <span className="text-green-400 font-semibold">Seret bangun hijau</span> ke kiri — tumpangkan tepat di atas bangun kuning!
+              <span className="text-green-400 font-semibold">{t.dragInstruction}</span>
             </p>
           ) : (
             <p className="font-body text-xs font-semibold text-green-400">
-              🎉 Kedua bangun <span className="text-yellow-300">berimpit sempurna</span> — itulah makna <strong className="text-white">KONGRUEN</strong>!
+              {t.snappedMessageBefore}<span className="text-yellow-300">{t.snappedMessageEmphasis}</span>{t.snappedMessageAfter}
             </p>
           )
         }
         <button onClick={reset}
           className="shrink-0 text-xs text-white/40 hover:text-white/80 border border-white/10 hover:border-white/30 rounded px-2 py-1 font-body transition-colors"
-        >↺ Ulangi</button>
+        >{t.resetLabel}</button>
       </div>
     </div>
   );
