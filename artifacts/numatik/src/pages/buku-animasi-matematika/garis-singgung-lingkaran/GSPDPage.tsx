@@ -183,7 +183,7 @@ const translations = {
   },
 };
 
-type TranslationKey = keyof typeof translations.id;
+type TranslationKey = Exclude<keyof typeof translations.id, "tabel">;
 
 /* ── SVG: GSPD diagram ── */
 const GSPDSVG = () => (

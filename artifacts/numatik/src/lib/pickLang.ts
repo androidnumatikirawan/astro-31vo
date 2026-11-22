@@ -1,7 +1,7 @@
 import type { Language } from "@/contexts/LanguageContext";
 
 type LanguageMap = Partial<Record<Language, unknown>>;
-type LanguageMapValue<T extends LanguageMap> = Exclude<
+export type LanguageMapValue<T extends LanguageMap> = Exclude<
   T[Extract<keyof T, Language>],
   undefined
 >;

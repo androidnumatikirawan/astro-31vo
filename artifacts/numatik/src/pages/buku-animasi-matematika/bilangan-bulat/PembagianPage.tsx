@@ -1262,7 +1262,7 @@ const PembagianBilanganBulatPage = () => {
                 {c.aturanTandaTitle}
               </p>
               <div className="grid grid-cols-2 gap-2">
-                {(c.signGrid as { kiri: string; kanan: string; contoh: string }[]).map(({ kiri, kanan, contoh }, i) => {
+                {(c.signGrid as readonly { kiri: string; kanan: string; contoh: string }[]).map(({ kiri, kanan, contoh }, i) => {
                   const colors = [
                     "bg-green-900/50 border-green-500/40 text-green-200",
                     "bg-cyan-900/50 border-cyan-500/40 text-cyan-200",
@@ -1292,7 +1292,7 @@ const PembagianBilanganBulatPage = () => {
                 {c.sifatTitle}
               </p>
               <div className="grid grid-cols-1 gap-2">
-                {(c.sifatItems as { sifat: string; detail: string }[]).map(({ sifat, detail }, i) => {
+                {(c.sifatItems as readonly { sifat: string; detail: string }[]).map(({ sifat, detail }, i) => {
                   const colors = [
                     "from-red-900/50 to-red-800/20 border-red-500/40 text-red-200",
                     "from-slate-800/70 to-slate-700/30 border-slate-500/40 text-slate-200",
@@ -1319,7 +1319,7 @@ const PembagianBilanganBulatPage = () => {
                 {c.trikTitle}
               </p>
               <div className="space-y-2">
-                {(c.trikItems as { icon: string; tip: string; detail: string }[]).map(({ icon, tip, detail }, i) => {
+                {(c.trikItems as readonly { icon: string; tip: string; detail: string }[]).map(({ icon, tip, detail }, i) => {
                   const colors = [
                     "bg-green-900/30 border-green-500/30",
                     "bg-teal-900/30 border-teal-500/30",
@@ -1349,7 +1349,7 @@ const PembagianBilanganBulatPage = () => {
                 <strong className="text-yellow-300">{c.conclusionBold2}</strong>{c.conclusionP3}
               </p>
               <div className="flex flex-wrap justify-center gap-2 mt-1">
-                {(c.conclusionTags as string[]).map(tag => (
+                {(c.conclusionTags as readonly string[]).map(tag => (
                   <span key={tag} className="bg-white/10 border border-white/20 text-white/80 text-xs font-body px-3 py-1 rounded-full">{tag}</span>
                 ))}
               </div>

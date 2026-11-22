@@ -1,4 +1,4 @@
-import { pickLang } from "@/lib/pickLang";
+import { pickLang, type LanguageMapValue } from "@/lib/pickLang";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Starfield from "@/components/Starfield";
@@ -378,11 +378,13 @@ const translations = {
     c3Sol: "集合",
   },
 };
+type Translation = LanguageMapValue<typeof translations> &
+  Partial<Record<"terbukaDefBody4", string>>;
 
 const KalimatTerbukaTertutupPage = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const t = pickLang(translations, language);
+  const t: Translation = pickLang(translations, language);
   const [expandedSections, setExpandedSections] = useState<string[]>(["intro", "terbuka", "tertutup", "tips", "contoh1", "contoh2", "contoh3"]);
 
   const toggleSection = (section: string) => {

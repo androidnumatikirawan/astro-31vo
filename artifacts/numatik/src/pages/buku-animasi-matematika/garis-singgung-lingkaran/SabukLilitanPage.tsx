@@ -222,7 +222,7 @@ const translations = {
   },
 };
 
-type TranslationKey = keyof typeof translations.id;
+type TranslationKey = Exclude<keyof typeof translations.id, "recap_rows">;
 
 /* ── SVG: Belt around two equal circles ── */
 const SabukSamaBesarSVG = () => (

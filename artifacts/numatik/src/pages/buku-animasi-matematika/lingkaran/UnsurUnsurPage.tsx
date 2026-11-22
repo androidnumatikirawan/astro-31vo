@@ -1,4 +1,4 @@
-import { pickLang } from "@/lib/pickLang";
+import { pickLang, type LanguageMapValue } from "@/lib/pickLang";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -286,7 +286,7 @@ const translations = {
     tips: "🚀 宇宙人のヒント：アポテマは、パラボラアンテナや衛星の設計に使われています。多角形の辺数が増えるほど、アポテマは円の半径に近づきます。これがパラボラアンテナの設計原理です！",
   },
 } as const;
-type T = typeof translations.id;
+type T = LanguageMapValue<typeof translations>;
 
 /* ─── SVG Components (accept caption + ariaLabel props) ── */
 const PusatSVG = ({ caption, ariaLabel }: { caption: string; ariaLabel: string }) => (

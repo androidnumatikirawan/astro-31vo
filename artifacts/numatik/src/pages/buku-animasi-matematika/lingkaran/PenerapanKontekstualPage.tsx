@@ -1,4 +1,4 @@
-import { pickLang } from "@/lib/pickLang";
+import { pickLang, type LanguageMapValue } from "@/lib/pickLang";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -279,7 +279,7 @@ const translations = {
     tips: "🚀 宇宙人のヒント：学んだ円の公式はすべてNASAのエンジニアがロケット、衛星軌道、レーダーアンテナの設計に使っています。宇宙エンジニアへの一歩を踏み出しました！",
   },
 } as const;
-type T = typeof translations.id;
+type T = LanguageMapValue<typeof translations>;
 
 /* ─── SVG: Jam Dinding ─────────────────────────────────── */
 const JamDindingSVG = ({ t }: { t: T }) => (

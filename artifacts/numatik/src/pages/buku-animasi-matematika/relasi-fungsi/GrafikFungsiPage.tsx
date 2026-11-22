@@ -1,4 +1,4 @@
-import { pickLang } from "@/lib/pickLang";
+import { pickLang, type LanguageMapValue } from "@/lib/pickLang";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Starfield from "@/components/Starfield";
@@ -345,7 +345,9 @@ const GrafikFungsiPage = () => {
     tick:    isSp ? "#64748b" : "#374151",
     caption: isSp ? "text-white/40" : "text-gray-500",
   };
-  const t = pickLang(translations, language);
+  type Translation = LanguageMapValue<typeof translations> &
+    Partial<Record<"graph1_title" | "graph1_sub" | "graph2_title" | "graph2_sub", string>>;
+  const t: Translation = pickLang(translations, language);
 
   const [expandedSections, setExpandedSections] = useState<string[]>([
     "intro", "konsep", "contoh1", "contoh2", "contoh3", "rangkuman",
@@ -384,9 +386,9 @@ const GrafikFungsiPage = () => {
     soal, opsi, kunci, pembahasanSteps, autoShow = false
   }: {
     soal: string;
-    opsi: { kode: string; teks: string }[];
+    opsi: readonly { kode: string; teks: string }[];
     kunci: string;
-    pembahasanSteps?: string[];
+    pembahasanSteps?: readonly string[];
     autoShow?: boolean;
   }) => {
     const dipilih = autoShow ? kunci : jawaban[soal];

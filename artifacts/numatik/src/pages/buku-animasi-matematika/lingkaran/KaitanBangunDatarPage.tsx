@@ -1,4 +1,4 @@
-import { pickLang } from "@/lib/pickLang";
+import { pickLang, type LanguageMapValue } from "@/lib/pickLang";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -240,7 +240,7 @@ const translations = {
     backBtn: "← 円に戻る",
   },
 } as const;
-type T = typeof translations.id;
+type T = LanguageMapValue<typeof translations>;
 
 /* ─── SVG: Incircle ──────────────────────────────────────── */
 const LingkaranDalamSegitigaSVG = ({ t }: { t: T }) => (

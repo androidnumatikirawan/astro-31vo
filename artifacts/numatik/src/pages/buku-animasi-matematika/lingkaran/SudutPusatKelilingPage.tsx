@@ -1,4 +1,4 @@
-import { pickLang } from "@/lib/pickLang";
+import { pickLang, type LanguageMapValue } from "@/lib/pickLang";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -285,7 +285,7 @@ const translations = {
     tips: "🚀 宇宙人のヒント：タレスの定理は、半円形の無線アンテナレシーバーが常に送信機から90°の受信角を持つことを保証するためにエンジニアに使用されています！",
   },
 } as const;
-type T = typeof translations.id;
+type T = LanguageMapValue<typeof translations>;
 
 /* ─── SVG Components ─────────────────────────────────────── */
 const SudutPusatSVG = ({ t }: { t: T }) => (

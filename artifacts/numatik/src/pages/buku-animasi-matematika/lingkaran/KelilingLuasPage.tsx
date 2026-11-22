@@ -1,4 +1,4 @@
-import { pickLang } from "@/lib/pickLang";
+import { pickLang, type LanguageMapValue } from "@/lib/pickLang";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -273,7 +273,7 @@ const translations = {
     tips: "🚀 宇宙人のヒント：惑星の軌道は楕円ですが、多くの人工衛星の軌道は円に近いです。円周の公式は、衛星が地球を一周するのにかかる時間の計算に使われます！",
   },
 } as const;
-type T = typeof translations.id;
+type T = LanguageMapValue<typeof translations>;
 
 /* ─── Pi Animation SVG ───────────────────────────────────── */
 const PiAnimationSVG = ({ t }: { t: T }) => {

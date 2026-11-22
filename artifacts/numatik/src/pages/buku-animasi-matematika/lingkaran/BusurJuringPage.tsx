@@ -1,4 +1,4 @@
-import { pickLang } from "@/lib/pickLang";
+import { pickLang, type LanguageMapValue } from "@/lib/pickLang";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -402,7 +402,7 @@ const translations = {
     tips: "🚀 宇宙人のヒント：パラボラアンテナや望遠鏡のリフレクターは、信号の焦点角を決定するために弧の計算を使用します。角度が正確であるほど、信号がクリアになります！",
   },
 } as const;
-type T = typeof translations.id;
+type T = LanguageMapValue<typeof translations>;
 
 /* ═══════════════════════════════════════════════════════════════════
    Shared drag hook — returns angle (0-360°) of pointer on the circle

@@ -60,22 +60,22 @@ The following imported components had 14 baseline diagnostics, and the same diag
 - Counts below are unique diagnostics by `(file, line, column, code, message)` across completed subsets; imported diagnostics repeated in multiple subsets are counted once. They do not include diagnostics unique to the unfinished `App.tsx` entry subset.
 - The candidate HEAD counts include a type-only correction to `pickLang` that replaces an `unknown` result with the union of the provided locale-map value types. That correction removes the newly introduced `unknown` diagnostics but reveals additional incompatibilities at existing call sites. The correction is included in the follow-up commit that records this comparison.
 
-| Folder | Baseline diagnostics | HEAD candidate diagnostics |
+| Folder | Baseline diagnostics | Current split count after focused fixes |
 | --- | ---: | ---: |
 | `src/components` | 111 | 88 |
 | `src/games` | 13 | 13 |
 | `src/pages/<root>` | 272 | 244 |
 | `src/pages/bank-soal` | 21 | 2 |
-| `src/pages/buku-animasi-matematika` | 2,246 | 1,652 |
+| `src/pages/buku-animasi-matematika` | 2,246 | 1,616 |
 | `src/pages/lkpd` | 97 | 90 |
 | `src/pages/menghitung-cepat` | 8 | 0 |
 | `src/pages/numatik-gamez` | 74 | 74 |
 | `src/pages/ruang-untuk-guru` | 46 | 10 |
 | `src/pages/tka` | 18 | 7 |
 | `src/pages/tugas-latihan-mandiri` | 135 | 6 |
-| **Total completed subsets** | **3,041** | **2,186** |
+| **Total completed subsets** | **3,041** | **2,150** |
 
-There are 18 new `(file, TS code)` pairs in the completed-subset comparison: 14 in files changed since the baseline and 4 in unchanged files. The unchanged-file pairs are TS2322 in `src/pages/OlimpiadeBilanganIrasionalPage.tsx`, `src/pages/buku-animasi-matematika/aritmetika-sosial/BrutoNettoTaraPage.tsx`, `BungaTunggalPage.tsx`, and `DiskonPage.tsx` (`string | undefined` is not assignable to `string`).
+The split comparison initially reported 18 new `(file, TS code)` pairs. A focused rerun with the same explicit 16 page entry files found that four TS2322 pairs in unchanged files were already present at baseline; they were not regressions. The remaining 14 pairs were in changed pages and are listed below.
 
 New pairs in changed files and the TypeScript messages:
 
@@ -95,4 +95,10 @@ New pairs in changed files and the TypeScript messages:
 | `relasi-fungsi/GrafikFungsiPage.tsx:496,497,532,533` | TS2339 | Properties `graph1_title`, `graph1_sub`, `graph2_title`, and `graph2_sub` do not exist on the union of locale objects. |
 | `relasi-fungsi/GrafikFungsiPage.tsx:622,624,692,694,750,752` | TS2322 | Readonly locale tuples/arrays are not assignable to the mutable array types expected by these props. |
 
-The gate is not clear: new pairs remain in changed page files, and the `App.tsx` entry subset did not complete. Per the task constraints, no `src/pages` files were changed and Fase B/C must not proceed until this is resolved.
+## Focused regression verification (2026-11-22)
+
+- Re-ran the same targeted TypeScript program sequentially on baseline `894c52e` and the corrected working tree. The program explicitly includes the 12 changed page files listed above plus the four unchanged pages that had been reported as regressions; imported dependencies are included by TypeScript.
+- The baseline program reported 54 diagnostics and the corrected program reported 10. There are **0 new `(file, TS code)` pairs** in the corrected program. The 10 remaining diagnostics are already present at baseline: four TS2322 entries in unchanged pages, two TS2345 ref-type entries in `BusurJuringPage.tsx`, and four diagnostics in the imported `SudutPusat*` components.
+- The 14 changed-file pairs (36 diagnostic locations) were addressed with type-only changes. No translation or user-facing content was changed.
+- The broad folder totals above subtract those 36 resolved diagnostic locations from the previous HEAD candidate counts. They remain split-subset totals, not a successful full-application typecheck.
+- The full application check and the subset rooted at `App.tsx`/its lazy-import graph still terminate with SIGTERM (exit 143) before completing. Those scopes remain unverified; the focused page regression subset completed with zero new pairs.
