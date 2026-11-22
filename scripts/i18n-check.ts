@@ -20,6 +20,21 @@ type LocaleSnapshot = {
   issues: string[];
 };
 
+type MismatchCounts = {
+  idOnlyKeys: number;
+  extraKeys: number;
+  arrayLengths: number;
+  numbers: number;
+};
+
+type MismatchExample = {
+  key: string;
+  idValue: string;
+  enValue: string;
+  type: string;
+  numericNote?: string;
+};
+
 type FileAnalysis = {
   path: string;
   maps: TranslationMap[];
@@ -28,7 +43,16 @@ type FileAnalysis = {
   usesPickLang: boolean;
   hasTranslation: boolean;
   unreadable: string[];
+  mismatchCounts: MismatchCounts;
   discrepancyCount: number;
+  mismatchExamples: MismatchExample[];
+  numberMismatchesBefore: number;
+  numberMismatchesAfter: number;
+  numberMismatchesRemoved: number;
+  numberMismatchesAdded: number;
+  formatOnlyPairs: number;
+  numberFormatAmbiguities: number;
+  kind: "halaman konten" | "wrapper";
   report: string[];
 };
 
@@ -542,7 +566,77 @@ function normalizeNumber(
   return `${sign}${integer}${fraction ? `.${fraction}` : ""}`;
 }
 
+function prepareNumberText(text: string, language: Language): string {
+  const gradePatterns: Partial<Record<Language, RegExp>> = {
+    id: /\bkelas\s*[789]\s*[a-z]?\b/gi,
+    en: /\bgrade\s*[789]\s*[a-z]?\b/gi,
+    "ms-MY": /\btingkatan\s*[1-3]\s*[a-z]?\b/gi,
+    ja: /中学\s*[1-3]\s*年/g,
+    "zh-CN": /[七八九1-9]\s*年级/g,
+    ru: /\b[789]\s*класс\b/gi,
+  };
+  return text
+    .replace(/\bRp(?=\s*[+-]?\d)/gi, " ")
+    .replace(/\\,/g, " ")
+    .replace(/\{,\}/g, ",")
+    .replace(
+      /\\(?:underline|overline|text|mathrm|mathbf|mathit|operatorname)\s*\{([^{}]*)\}/g,
+      "$1",
+    )
+    .replace(/\\[A-Za-z]+/g, " ")
+    .replace(/[{}]/g, " ")
+    .replace(gradePatterns[language] ?? /$^/, " ");
+}
+
+function numberTokensIn(text: string, language: Language): string[] {
+  const tokens =
+    prepareNumberText(text, language).match(
+      /(?<![A-Za-z0-9_])([+-]?\d+(?:[.,\u00a0\u202f ]\d+)*)(?:st|nd|rd|th)?(?![A-Za-z0-9_])/giu,
+    ) ?? [];
+  return tokens.map((token) => token.replace(/(?:st|nd|rd|th)$/i, ""));
+}
+
 function numbersIn(text: string, language: Language): string[] {
+  return numberTokensIn(text, language)
+    .map((token) => normalizeNumber(token, language))
+    .filter((value): value is string => value !== undefined);
+}
+
+const numberNormalizationExamples: Array<[string, Language, string[]]> = [
+  ["1.234,5", "id", ["1234.5"]],
+  ["1,234.5", "en", ["1234.5"]],
+  ["Rp1.234.500", "id", ["1234500"]],
+  ["$1,234,500", "en", ["1234500"]],
+  ["1\\,234{,}5", "ru", ["1234.5"]],
+  ["4,\\underline{6}38", "id", ["4.638"]],
+  ["2nd decimal", "en", ["2"]],
+  ["中学1年", "ja", []],
+];
+
+function displayValue(
+  snapshot: LocaleSnapshot | undefined,
+  key: string,
+): string {
+  if (!snapshot) return "—";
+  const value = snapshot.values.get(key);
+  if (value !== undefined) return value.replace(/\s+/g, " ").trim();
+  const arrayLength = snapshot.arrays.get(key);
+  if (arrayLength !== undefined) return `[array length ${arrayLength}]`;
+  const childCount = [...snapshot.keys].filter((candidate) =>
+    candidate.startsWith(`${key}.`),
+  ).length;
+  if (childCount) return `[object with ${childCount} keys]`;
+  return snapshot.keys.has(key) ? "[dynamic value]" : "—";
+}
+
+function compactValue(value: string, maxLength = 180): string {
+  const normalized = value.replace(/\|/g, "\\|").replace(/`/g, "\\`");
+  return normalized.length > maxLength
+    ? `${normalized.slice(0, maxLength - 1)}…`
+    : normalized;
+}
+
+function legacyNumbersIn(text: string, language: Language): string[] {
   const tokens =
     text.match(
       /(?<![\p{L}\p{N}_])[+-]?\d+(?:[.,\u00a0\u202f ]\d+)*(?![\p{L}\p{N}_])/gu,
@@ -552,13 +646,60 @@ function numbersIn(text: string, language: Language): string[] {
     .filter((value): value is string => value !== undefined);
 }
 
+function assertNumberNormalizationExamples(): void {
+  for (const [text, language, expected] of numberNormalizationExamples) {
+    const actual = numbersIn(text, language);
+    if (actual.join(",") !== expected.join(",")) {
+      throw new Error(
+        `Number normalization failed for ${language} value ${JSON.stringify(text)}: ${actual.join(",")}`,
+      );
+    }
+  }
+}
+
+assertNumberNormalizationExamples();
+
 function analyzeMap(
   map: TranslationMap,
   source: ts.SourceFile,
   declarations: Map<string, ts.Expression[]>,
-): { lines: string[]; score: number; unreadable: string[] } {
+): {
+  lines: string[];
+  counts: MismatchCounts;
+  examples: MismatchExample[];
+  unreadable: string[];
+  numberMismatchesBefore: number;
+  numberMismatchesAfter: number;
+  numberMismatchesRemoved: number;
+  numberMismatchesAdded: number;
+  formatOnlyPairs: number;
+  numberFormatAmbiguities: number;
+} {
   const snapshots = new Map<Language, LocaleSnapshot>();
   const unreadable: string[] = [];
+  const counts: MismatchCounts = {
+    idOnlyKeys: 0,
+    extraKeys: 0,
+    arrayLengths: 0,
+    numbers: 0,
+  };
+  const examples: MismatchExample[] = [];
+  let numberMismatchesBefore = 0;
+  let numberMismatchesAfter = 0;
+  let numberMismatchesRemoved = 0;
+  let numberMismatchesAdded = 0;
+  let formatOnlyPairs = 0;
+  let numberFormatAmbiguities = 0;
+
+  const addExample = (example: MismatchExample) => {
+    const category = example.type[0];
+    if (
+      examples.filter((candidate) => candidate.type[0] === category).length < 12
+    ) {
+      examples.push(example);
+    }
+  };
+
   for (const [language, expression] of map.entries) {
     if (!expression) {
       unreadable.push(`${language}: locale value cannot be resolved`);
@@ -574,7 +715,6 @@ function analyzeMap(
   }
 
   const lines: string[] = [];
-  let score = 0;
   const id = snapshots.get("id");
   if (id) {
     for (const language of LANGUAGES) {
@@ -590,13 +730,29 @@ function analyzeMap(
         lines.push(
           `- **${language}, key id yang tidak ada:** ${onlyId.map((key) => `\`${key}\``).join(", ")}`,
         );
-        score += onlyId.length;
+        counts.idOnlyKeys += onlyId.length;
+        for (const key of onlyId) {
+          addExample({
+            key,
+            idValue: displayValue(id, key),
+            enValue: displayValue(snapshots.get("en"), key),
+            type: `a — key id hilang di ${language}`,
+          });
+        }
       }
       if (onlyOther.length) {
         lines.push(
           `- **${language}, key tambahan:** ${onlyOther.map((key) => `\`${key}\``).join(", ")}`,
         );
-        score += onlyOther.length;
+        counts.extraKeys += onlyOther.length;
+        for (const key of onlyOther) {
+          addExample({
+            key,
+            idValue: displayValue(id, key),
+            enValue: displayValue(snapshots.get("en"), key),
+            type: `b — key tambahan di ${language}`,
+          });
+        }
       }
     }
 
@@ -614,7 +770,13 @@ function analyzeMap(
         lines.push(
           `- **Panjang array \`${key}\` berbeda:** ${lengths.map(([language, length]) => `${language}=${length}`).join(", ")}`,
         );
-        score++;
+        counts.arrayLengths++;
+        addExample({
+          key,
+          idValue: displayValue(id, key),
+          enValue: displayValue(snapshots.get("en"), key),
+          type: `c — panjang array berbeda (${lengths.map(([language, length]) => `${language}=${length}`).join(", ")})`,
+        });
       }
     }
 
@@ -625,17 +787,54 @@ function analyzeMap(
         other.values.has(key),
       );
       for (const key of sharedValues.sort()) {
-        const idNumbers = numbersIn(id.values.get(key) ?? "", "id");
-        const otherNumbers = numbersIn(other.values.get(key) ?? "", language);
-        if (
+        const idText = id.values.get(key) ?? "";
+        const otherText = other.values.get(key) ?? "";
+        const legacyIdNumbers = legacyNumbersIn(idText, "id");
+        const legacyOtherNumbers = legacyNumbersIn(otherText, language);
+        const idTokens = numberTokensIn(idText, "id");
+        const otherTokens = numberTokensIn(otherText, language);
+        const idNumbers = numbersIn(idText, "id");
+        const otherNumbers = numbersIn(otherText, language);
+        const legacyMismatch =
+          (legacyIdNumbers.length || legacyOtherNumbers.length) &&
+          legacyIdNumbers.join(",") !== legacyOtherNumbers.join(",");
+        const mismatch =
           (idNumbers.length || otherNumbers.length) &&
-          idNumbers.join(",") !== otherNumbers.join(",")
-        ) {
+          idNumbers.join(",") !== otherNumbers.join(",");
+        if (legacyMismatch) numberMismatchesBefore++;
+        if (mismatch) {
+          numberMismatchesAfter++;
+          counts.numbers++;
+          const sameNumberToken = idTokens.join(",") === otherTokens.join(",");
+          if (sameNumberToken) numberFormatAmbiguities++;
+          const numericNote =
+            !idNumbers.length || !otherNumbers.length
+              ? `angka digit hanya ditemukan di ${idNumbers.length ? "id" : language}; kemungkinan angka lain ditulis dengan kata, perlu review`
+              : sameNumberToken
+                ? `token angka sama; tafsir pemisah locale berbeda: id=[${idNumbers.join(", ")}], ${language}=[${otherNumbers.join(", ")}]`
+                : `beda nilai setelah normalisasi: id=[${idNumbers.join(", ")}], ${language}=[${otherNumbers.join(", ")}]`;
           lines.push(
             `- **Angka berbeda pada \`${key}\` (id vs ${language}):** id=[${idNumbers.join(", ")}], ${language}=[${otherNumbers.join(", ")}]`,
           );
-          score++;
+          addExample({
+            key,
+            idValue: idText,
+            enValue: displayValue(snapshots.get("en"), key),
+            type: `d — angka berbeda setelah normalisasi (id vs ${language})`,
+            numericNote,
+          });
+        } else if (legacyMismatch) {
+          numberMismatchesRemoved++;
+        } else if (
+          idNumbers.length > 0 &&
+          idNumbers.join(",") === otherNumbers.join(",") &&
+          idTokens.join(",") !== otherTokens.join(",") &&
+          idTokens.map((token) => token.replace(/[.,\s]/g, "")).join(",") ===
+            otherTokens.map((token) => token.replace(/[.,\s]/g, "")).join(",")
+        ) {
+          formatOnlyPairs++;
         }
+        if (!legacyMismatch && mismatch) numberMismatchesAdded++;
       }
     }
   } else {
@@ -651,7 +850,18 @@ function analyzeMap(
     lines.push(
       "- Tidak ditemukan ketidaksesuaian key, panjang array, atau angka.",
     );
-  return { lines, score, unreadable };
+  return {
+    lines,
+    counts,
+    examples,
+    unreadable,
+    numberMismatchesBefore,
+    numberMismatchesAfter,
+    numberMismatchesRemoved,
+    numberMismatchesAdded,
+    formatOnlyPairs,
+    numberFormatAmbiguities,
+  };
 }
 
 function listSourceFiles(directory: string): string[] {
@@ -687,11 +897,33 @@ function analyzeFile(path: string): FileAnalysis {
     usesTranslationHook ||
     /\bi18n\.t\s*\(/.test(text);
   const report: string[] = [];
-  let discrepancyCount = 0;
+  const mismatchCounts: MismatchCounts = {
+    idOnlyKeys: 0,
+    extraKeys: 0,
+    arrayLengths: 0,
+    numbers: 0,
+  };
+  const mismatchExamples: MismatchExample[] = [];
+  let numberMismatchesBefore = 0;
+  let numberMismatchesAfter = 0;
+  let numberMismatchesRemoved = 0;
+  let numberMismatchesAdded = 0;
+  let formatOnlyPairs = 0;
+  let numberFormatAmbiguities = 0;
 
   maps.forEach((map, index) => {
     const result = analyzeMap(map, source, declarations);
-    discrepancyCount += result.score;
+    mismatchCounts.idOnlyKeys += result.counts.idOnlyKeys;
+    mismatchCounts.extraKeys += result.counts.extraKeys;
+    mismatchCounts.arrayLengths += result.counts.arrayLengths;
+    mismatchCounts.numbers += result.counts.numbers;
+    mismatchExamples.push(...result.examples);
+    numberMismatchesBefore += result.numberMismatchesBefore;
+    numberMismatchesAfter += result.numberMismatchesAfter;
+    numberMismatchesRemoved += result.numberMismatchesRemoved;
+    numberMismatchesAdded += result.numberMismatchesAdded;
+    formatOnlyPairs += result.formatOnlyPairs;
+    numberFormatAmbiguities += result.numberFormatAmbiguities;
     unreadable.push(...result.unreadable);
     const line =
       source.getLineAndCharacterOfPosition(map.node.getStart()).line + 1;
@@ -703,6 +935,10 @@ function analyzeFile(path: string): FileAnalysis {
     report.push("");
   });
 
+  const discrepancyCount = Object.values(mismatchCounts).reduce(
+    (total, count) => total + count,
+    0,
+  );
   if (unreadable.length && maps.length === 0) {
     report.push(`- **tidak terbaca:** ${[...new Set(unreadable)].join("; ")}`);
   }
@@ -715,7 +951,16 @@ function analyzeFile(path: string): FileAnalysis {
     usesPickLang,
     hasTranslation,
     unreadable: [...new Set(unreadable)],
+    mismatchCounts,
     discrepancyCount,
+    mismatchExamples,
+    numberMismatchesBefore,
+    numberMismatchesAfter,
+    numberMismatchesRemoved,
+    numberMismatchesAdded,
+    formatOnlyPairs,
+    numberFormatAmbiguities,
+    kind: text.includes("MateriTopicPage") ? "wrapper" : "halaman konten",
     report,
   };
 }
@@ -761,6 +1006,66 @@ const topDiscrepancies = allFiles
       b.discrepancyCount - a.discrepancyCount || a.path.localeCompare(b.path),
   )
   .slice(0, 10);
+const totalMismatchCounts = allFiles.reduce<MismatchCounts>(
+  (totals, file) => ({
+    idOnlyKeys: totals.idOnlyKeys + file.mismatchCounts.idOnlyKeys,
+    extraKeys: totals.extraKeys + file.mismatchCounts.extraKeys,
+    arrayLengths: totals.arrayLengths + file.mismatchCounts.arrayLengths,
+    numbers: totals.numbers + file.mismatchCounts.numbers,
+  }),
+  { idOnlyKeys: 0, extraKeys: 0, arrayLengths: 0, numbers: 0 },
+);
+const totalLegacyNumberMismatches = allFiles.reduce(
+  (total, file) => total + file.numberMismatchesBefore,
+  0,
+);
+const totalNormalizedNumberMismatches = allFiles.reduce(
+  (total, file) => total + file.numberMismatchesAfter,
+  0,
+);
+const totalRemovedNumberMismatches = allFiles.reduce(
+  (total, file) => total + file.numberMismatchesRemoved,
+  0,
+);
+const totalAddedNumberMismatches = allFiles.reduce(
+  (total, file) => total + file.numberMismatchesAdded,
+  0,
+);
+const totalFormatOnlyPairs = allFiles.reduce(
+  (total, file) => total + file.formatOnlyPairs,
+  0,
+);
+const totalNumberFormatAmbiguities = allFiles.reduce(
+  (total, file) => total + file.numberFormatAmbiguities,
+  0,
+);
+
+function selectMismatchExamples(file: FileAnalysis): MismatchExample[] {
+  const selected: MismatchExample[] = [];
+  for (const category of ["a", "b", "c", "d"]) {
+    const example = file.mismatchExamples.find(
+      (candidate) =>
+        candidate.type.startsWith(category) &&
+        !selected.some(
+          (existing) =>
+            existing.key === candidate.key && existing.type === candidate.type,
+        ),
+    );
+    if (example) selected.push(example);
+  }
+  for (const example of file.mismatchExamples) {
+    if (selected.length >= 5) break;
+    if (
+      !selected.some(
+        (existing) =>
+          existing.key === example.key && existing.type === example.type,
+      )
+    ) {
+      selected.push(example);
+    }
+  }
+  return selected.slice(0, 5);
+}
 
 const output: string[] = [
   "# Laporan pemeriksaan i18n materi",
@@ -775,17 +1080,68 @@ const output: string[] = [
   `- File dengan cabang \`ja\`: ${allFiles.filter((file) => file.hasJaBranch).length}.`,
   `- File tanpa terjemahan yang terdeteksi: ${allFiles.filter((file) => !file.hasTranslation).length}.`,
   `- File dengan objek yang tidak terbaca: ${allFiles.filter((file) => file.unreadable.length > 0).length}.`,
+  `- Normalisasi angka: ${totalLegacyNumberMismatches} mismatch dengan ekstraktor lama; ${totalNormalizedNumberMismatches} sesudah perbaikan; ${totalRemovedNumberMismatches} mismatch lama tidak lagi terdeteksi; ${totalAddedNumberMismatches} mismatch baru terungkap; ${totalFormatOnlyPairs} pasangan angka yang hanya berbeda format dinormalisasi sebagai nilai sama dan tidak dihitung sebagai mismatch; ${totalNumberFormatAmbiguities} pasangan token sama yang ditafsirkan berbeda menurut locale perlu review format.`,
+  "- Label jenjang seperti Kelas 7 / Grade 7 / 中学1年 diabaikan pada perbandingan angka karena penomoran jenjang berbeda menurut bahasa.",
   "",
   "### 10 file dengan ketidaksesuaian terbanyak",
   "",
-  "| File | Jumlah ketidaksesuaian |",
-  "| --- | ---: |",
+  "| File | Total | (a) Key id hilang | (b) Key ekstra | (c) Panjang array | (d) Angka |",
+  "| --- | ---: | ---: | ---: | ---: | ---: |",
   ...(topDiscrepancies.length
     ? topDiscrepancies.map(
         (file) =>
-          `| [\`${markdownPath(file.path)}\`](${markdownPath(file.path)}) | ${file.discrepancyCount} |`,
+          `| [\`${markdownPath(file.path)}\`](${markdownPath(file.path)}) | ${file.discrepancyCount} | ${file.mismatchCounts.idOnlyKeys} | ${file.mismatchCounts.extraKeys} | ${file.mismatchCounts.arrayLengths} | ${file.mismatchCounts.numbers} |`,
       )
-    : ["| Tidak ada ketidaksesuaian terdeteksi | 0 |"]),
+    : ["| Tidak ada ketidaksesuaian terdeteksi | 0 | 0 | 0 | 0 | 0 |"]),
+  "",
+  "### Jumlah ketidaksesuaian per jenis (seluruh file)",
+  "",
+  "| Jenis | Jumlah |",
+  "| --- | ---: |",
+  `| (a) Key ada di id tetapi tidak ada di locale lain | ${totalMismatchCounts.idOnlyKeys} |`,
+  `| (b) Key ada di locale lain tetapi tidak ada di id | ${totalMismatchCounts.extraKeys} |`,
+  `| (c) Panjang array berbeda | ${totalMismatchCounts.arrayLengths} |`,
+  `| (d) Angka berbeda setelah normalisasi | ${totalMismatchCounts.numbers} |`,
+  "",
+  "### Contoh perbaikan ekstraksi angka",
+  "",
+  "| Teks | Bahasa | Ekstraktor lama | Setelah perbaikan |",
+  "| --- | --- | --- | --- |",
+  ...numberNormalizationExamples.map(
+    ([text, language]) =>
+      `| \`${compactValue(text)}\` | ${language} | [${legacyNumbersIn(text, language).join(", ") || "—"}] | [${numbersIn(text, language).join(", ") || "—"}] |`,
+  ),
+  "",
+  "False positive yang terkonfirmasi: ekstraktor lama memecah `4,\\underline{6}38` menjadi tiga angka (`4`, `6`, `38`), bukan satu desimal (`4.638`); notasi KaTeX `1\\,234{,}5` juga terpecah menjadi tiga angka. Perbaikan membuka markup KaTeX, membaca awalan mata wang `Rp`, menangani akhiran ordinal Inggris, dan mengecualikan angka label jenjang lintas bahasa.",
+  "",
+  "### Contoh konkret untuk 5 file teratas",
+  "",
+  "Nilai dipendekkan bila terlalu panjang. Untuk kategori (d), perbedaan yang ditampilkan adalah nilai numerik yang tetap berbeda setelah normalisasi; pasangan yang hanya berbeda format tidak dihitung sebagai mismatch.",
+  "",
+  ...topDiscrepancies.slice(0, 5).flatMap((file) => {
+    const examples = selectMismatchExamples(file);
+    return [
+      `#### [\`${markdownPath(file.path)}\`](${markdownPath(file.path)})`,
+      "",
+      "| Key | Nilai id | Nilai en | Jenis | Pemeriksaan angka |",
+      "| --- | --- | --- | --- | --- |",
+      ...examples.map(
+        (example) =>
+          `| \`${compactValue(example.key)}\` | ${compactValue(example.idValue)} | ${compactValue(example.enValue)} | ${example.type} | ${example.numericNote ?? "—"} |`,
+      ),
+      "",
+    ];
+  }),
+  "### File tanpa terjemahan yang terdeteksi",
+  "",
+  "| File | Klasifikasi |",
+  "| --- | --- |",
+  ...allFiles
+    .filter((file) => !file.hasTranslation)
+    .map(
+      (file) =>
+        `| [\`${markdownPath(file.path)}\`](${markdownPath(file.path)}) | ${file.kind} |`,
+    ),
   "",
   "## Cakupan per topik",
   "",
